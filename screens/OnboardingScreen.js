@@ -85,8 +85,9 @@ export default function OnboardingScreen({ navigation }) {
             Name / Nickname
           </Text>
           <TextInput
-            className="bg-surface border border-gray-200 rounded-xl px-4 py-3 text-base"
+            className="bg-surface border border-gray-200 rounded-xl px-4 py-3 text-base text-text"
             placeholder="Enter your name"
+            placeholderTextColor="#9CA3AF"
             value={name}
             onChangeText={setName}
             autoCapitalize="words"
@@ -101,7 +102,7 @@ export default function OnboardingScreen({ navigation }) {
             <Picker
               selectedValue={ageRange}
               onValueChange={setAgeRange}
-              style={{ color: "#1f2937" }}
+              style={{ color: "#FFFFFF" }}
             >
               {AGE_RANGES.map((range) => (
                 <Picker.Item key={range} label={range} value={range} />
@@ -141,7 +142,7 @@ export default function OnboardingScreen({ navigation }) {
             <Picker
               selectedValue={biggestChallenge}
               onValueChange={setBiggestChallenge}
-              style={{ color: "#1f2937" }}
+              style={{ color: "#FFFFFF" }}
             >
               {CHALLENGES.map((challenge) => (
                 <Picker.Item

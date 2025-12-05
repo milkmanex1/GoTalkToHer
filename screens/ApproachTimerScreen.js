@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, Alert, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
@@ -96,92 +96,97 @@ export default function ApproachTimerScreen({ navigation }) {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="px-6 py-8 items-center">
-        {!isActive && !timerComplete && (
-          <>
-            <View className="mb-8 w-full">
-              <Text className="text-lg font-semibold text-text mb-4 text-center">
-                Timer Duration
-              </Text>
-              <View className="bg-surface border border-gray-200 rounded-xl overflow-hidden">
-                <Picker
-                  selectedValue={duration}
-                  onValueChange={handleDurationChange}
-                  style={{ color: "#1f2937" }}
-                >
-                  {DURATIONS.map((dur) => (
-                    <Picker.Item
-                      key={dur}
-                      label={`${dur} seconds`}
-                      value={dur}
-                    />
-                  ))}
-                </Picker>
-              </View>
+    <View className="flex-1 bg-background">
+      {!isActive && !timerComplete && (
+        <View className="flex-1 items-center justify-center px-6">
+          <View className="mb-12 w-full">
+            <Text className="text-base font-semibold text-textSecondary mb-3 text-center">
+              Timer Duration
+            </Text>
+            <View className="bg-darkSurface border border-gray-800 rounded-xl overflow-hidden">
+              <Picker
+                selectedValue={duration}
+                onValueChange={handleDurationChange}
+                style={{ color: "#FFFFFF" }}
+              >
+                {DURATIONS.map((dur) => (
+                  <Picker.Item
+                    key={dur}
+                    label={`${dur} seconds`}
+                    value={dur}
+                  />
+                ))}
+              </Picker>
             </View>
+          </View>
 
-            <View className="mb-8">
-              <Text className="text-2xl font-bold text-text mb-4 text-center">
-                Ready to take action?
-              </Text>
-              <Text className="text-base text-textSecondary text-center px-4">
-                When you're ready, tap the button below. The timer will count
-                down, and when it reaches zero, it's time to approach.
-              </Text>
-            </View>
+          <View className="mb-12">
+            <Text className="text-2xl font-bold text-white mb-3 text-center">
+              Ready to take action?
+            </Text>
+            <Text className="text-base text-textSecondary text-center px-4">
+              When you're ready, tap the button below. The timer will count
+              down, and when it reaches zero, it's time to approach.
+            </Text>
+          </View>
 
-            <Button
-              title="Start Timer"
-              onPress={handleStart}
-              className="w-full"
-            />
-          </>
-        )}
+          <Button
+            title="Start Timer"
+            onPress={handleStart}
+            className="w-full"
+          />
+        </View>
+      )}
 
-        {isActive && (
-          <>
+      {isActive && (
+        <View className="flex-1">
+          {/* Centered timer with reduced padding */}
+          <View className="flex-1 items-center justify-center px-6">
             <Timer
               duration={duration}
               onComplete={handleComplete}
               isActive={isActive}
             />
-            <View className="mt-8 px-4">
-              <Text className="text-xl text-text text-center mb-4">
+            {/* Motivational text under circle */}
+            <View className="mt-12 px-4">
+              <Text className="text-base text-textSecondary text-center">
                 Take a breath. Give yourself whatever excuses you need.
               </Text>
-              <Text className="text-xl font-bold text-primary text-center">
-                When the timer ends, you approach.
-              </Text>
             </View>
-            <Button
-              title="Cancel"
+          </View>
+          
+          {/* Cancel button at bottom */}
+          <View className="pb-8 px-6">
+            <TouchableOpacity
               onPress={handleReset}
-              variant="outline"
-              className="mt-8 w-full"
-            />
-          </>
-        )}
+              className="py-3 px-6 border border-primary rounded-full items-center"
+            >
+              <Text className="text-textSecondary font-semibold text-sm">
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
-        {timerComplete && (
-          <>
-            <View className="mb-8">
-              <Text className="text-4xl mb-4">🎯</Text>
-              <Text className="text-3xl font-bold text-primary text-center mb-4">
-                Go now.
-              </Text>
-              <Text className="text-2xl font-semibold text-text text-center">
-                You've got this.
-              </Text>
-            </View>
-            <Button
-              title="Start New Timer"
-              onPress={handleReset}
-              className="w-full"
-            />
-          </>
-        )}
-      </View>
-    </ScrollView>
+      {timerComplete && (
+        <View className="flex-1 items-center justify-center px-6">
+          <View className="mb-12">
+            <Text className="text-4xl mb-6">🎯</Text>
+            <Text className="text-4xl font-bold text-primary text-center mb-4">
+              Go now.
+            </Text>
+            <Text className="text-2xl font-semibold text-white text-center">
+              You've got this.
+            </Text>
+          </View>
+          <Button
+            title="Start New Timer"
+            onPress={handleReset}
+            className="w-full"
+          />
+        </View>
+      )}
+    </View>
   );
 }

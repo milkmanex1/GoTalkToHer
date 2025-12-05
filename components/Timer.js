@@ -76,7 +76,7 @@ export default function Timer({ duration, onComplete, isActive }) {
           cx={100}
           cy={100}
           r={radius}
-          stroke="#e5e7eb"
+          stroke="#374151"
           strokeWidth={strokeWidth}
           fill="transparent"
         />
@@ -84,7 +84,7 @@ export default function Timer({ duration, onComplete, isActive }) {
           cx={100}
           cy={100}
           r={radius}
-          stroke="#6366f1"
+          stroke="#FF3E84"
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={circumference}
@@ -93,7 +93,7 @@ export default function Timer({ duration, onComplete, isActive }) {
         />
       </Svg>
       <View style={{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }}>
-        <Text className="text-4xl font-bold text-primary">
+        <Text className="text-6xl font-bold text-white">
           {Math.ceil(remainingTime)}
         </Text>
       </View>

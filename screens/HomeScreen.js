@@ -1,45 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import Button from "../components/Button";
-import Card from "../components/Card";
 import { supabase } from "../lib/supabase";
 import { Storage } from "../lib/storage";
 
-const FEATURES = [
-  {
-    id: "timer",
-    title: "Approach Timer",
-    description: "Countdown timer to help you take action",
-    route: "ApproachTimer",
-    icon: "⏱️",
-  },
+const SECONDARY_FEATURES = [
   {
     id: "starters",
-    title: "Conversation Starters",
-    description: "Get ideas for natural, respectful openers",
     route: "ConversationStarters",
     icon: "💬",
+    label: "Starters",
   },
   {
     id: "motivation",
-    title: "Motivation Boost",
-    description: "Get inspired with encouraging quotes",
     route: "MotivationBoost",
     icon: "💪",
+    label: "Motivation",
   },
   {
     id: "review",
-    title: "Post-Action Review",
-    description: "Reflect on your experience and get AI feedback",
     route: "PostActionReview",
     icon: "📝",
+    label: "Review",
   },
   {
     id: "chat",
-    title: "Wingman AI Chat",
-    description: "Get personalized coaching and advice",
     route: "WingmanChat",
     icon: "🤖",
+    label: "Wingman",
   },
 ];
 
@@ -83,41 +71,47 @@ export default function HomeScreen({ navigation }) {
   }
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="px-6 py-8">
-        {userProfile && (
-          <View className="mb-6">
-            <Text className="text-2xl font-bold text-text mb-2">
-              Welcome back, {userProfile.name}! 👋
-            </Text>
-            <Text className="text-base text-textSecondary">
-              Ready to build your confidence today?
-            </Text>
-          </View>
-        )}
+    <View className="flex-1 bg-background">
+      {/* Main centered content */}
+      <View className="flex-1 items-center justify-center px-6">
+        {/* Icon/Illustration placeholder */}
+        <View className="mb-12">
+          <Text className="text-6xl">⏱️</Text>
+        </View>
 
-        <View>
-          {FEATURES.map((feature) => (
-            <Card
+        {/* Motivational header */}
+        <View className="items-center mb-16">
+          <Text className="text-5xl font-bold text-white mb-4 text-center">
+            Go Now.
+          </Text>
+          <Text className="text-xl text-textSecondary text-center">
+            You've got this.
+          </Text>
+        </View>
+
+        {/* Single giant action button */}
+        <Button
+          title="Start Approach Timer"
+          onPress={() => navigation.navigate("ApproachTimer")}
+          className="w-full mb-20"
+        />
+      </View>
+
+      {/* Secondary links as bottom icon bar */}
+      <View className="pb-8 px-6">
+        <View className="flex-row justify-around items-center border-t border-gray-800 pt-6">
+          {SECONDARY_FEATURES.map((feature) => (
+            <TouchableOpacity
               key={feature.id}
               onPress={() => navigation.navigate(feature.route)}
-              className="mb-4"
+              className="items-center flex-1"
             >
-              <View className="flex-row items-center">
-                <Text className="text-4xl mr-4">{feature.icon}</Text>
-                <View className="flex-1">
-                  <Text className="text-xl font-semibold text-text mb-1">
-                    {feature.title}
-                  </Text>
-                  <Text className="text-sm text-textSecondary">
-                    {feature.description}
-                  </Text>
-                </View>
-              </View>
-            </Card>
+              <Text className="text-2xl mb-1">{feature.icon}</Text>
+              <Text className="text-xs text-textSecondary">{feature.label}</Text>
+            </TouchableOpacity>
           ))}
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 }

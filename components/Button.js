@@ -9,18 +9,18 @@ export default function Button({
   loading = false,
   className = '',
 }) {
-  const baseClasses = 'px-6 py-4 rounded-xl items-center justify-center min-h-[52px]';
+  const baseClasses = 'px-6 py-4 rounded-full items-center justify-center min-h-[52px]';
   const variantClasses = {
     primary: 'bg-primary',
     secondary: 'bg-secondary',
     accent: 'bg-accent',
-    outline: 'bg-transparent border-2 border-primary',
+    outline: 'bg-transparent border border-primary',
   };
   const textClasses = {
-    primary: 'text-white font-semibold text-base',
-    secondary: 'text-white font-semibold text-base',
-    accent: 'text-white font-semibold text-base',
-    outline: 'text-primary font-semibold text-base',
+    primary: 'text-white font-bold text-lg',
+    secondary: 'text-white font-bold text-lg',
+    accent: 'text-white font-bold text-lg',
+    outline: 'text-textSecondary font-semibold text-base',
   };
 
   return (
@@ -30,7 +30,7 @@ export default function Button({
       className={`${baseClasses} ${variantClasses[variant]} ${disabled || loading ? 'opacity-50' : ''} ${className}`}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' ? '#6366f1' : '#ffffff'} />
+        <ActivityIndicator color={variant === 'outline' ? '#FF3E84' : '#ffffff'} />
       ) : (
         <Text className={textClasses[variant]}>{title}</Text>
       )}
