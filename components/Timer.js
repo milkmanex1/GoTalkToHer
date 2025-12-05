@@ -10,141 +10,73 @@ export default function Timer({
   onTimeUpdate,
 }) {
   const [remainingTime, setRemainingTime] = useState(duration);
-  const [progress, setProgress] = useState(1);
-  const intervalRef = useRef(null);
+
   const animatedValue = useRef(new Animated.Value(1)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const intervalRef = useRef(null);
   const hasCompletedRef = useRef(false);
-  const onCompleteRef = useRef(onComplete);
-  const onTimeUpdateRef = useRef(onTimeUpdate);
 
-  // Keep refs up to date
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-    onTimeUpdateRef.current = onTimeUpdate;
-  }, [onComplete, onTimeUpdate]);
+  const radius = 80;
+  const strokeWidth = 8;
+  const circumference = 2 * Math.PI * radius;
 
-  // Breathing animation - pulse every ~900ms
+  // Convert Circle into an animated component
+  const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
   useEffect(() => {
-    if (isActive && remainingTime > 0) {
-      const breathingAnim = Animated.loop(
-        Animated.sequence([
-          Animated.timing(scaleAnim, {
-            toValue: 1.05,
-            duration: 450,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleAnim, {
-            toValue: 1.0,
-            duration: 450,
-            useNativeDriver: true,
-          }),
-        ])
-      );
-      breathingAnim.start();
-      return () => breathingAnim.stop();
-    } else {
-      scaleAnim.setValue(1);
+    if (!isActive) {
+      // Reset everything when timer is not active
+      resetTimer();
+      return;
     }
-  }, [isActive, remainingTime]);
 
-  // Stronger pulse animation for last 3 seconds
-  useEffect(() => {
-    if (isActive && remainingTime <= 3 && remainingTime > 0) {
-      // Stronger pulse on final seconds
-      const strongPulse = Animated.loop(
-        Animated.sequence([
-          Animated.timing(scaleAnim, {
-            toValue: 1.08,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleAnim, {
-            toValue: 1.0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ])
-      );
-      strongPulse.start();
+    // Reset before starting
+    resetTimer();
 
-      return () => {
-        strongPulse.stop();
-      };
-    }
-  }, [remainingTime, isActive]);
+    // Animate circle stroke 1 → 0
+    Animated.timing(animatedValue, {
+      toValue: 0,
+      duration: duration * 1000,
+      useNativeDriver: false, // SVG doesn't support true native driver
+    }).start();
 
-  useEffect(() => {
-    if (isActive) {
-      // Reset completion flag
-      hasCompletedRef.current = false;
-      setRemainingTime(duration);
-      setProgress(1);
-      animatedValue.setValue(1);
-      scaleAnim.setValue(1);
+    // Countdown each second
+    intervalRef.current = setInterval(() => {
+      setRemainingTime((prev) => {
+        const newValue = prev - 1;
 
-      // Animate progress from 1 to 0
-      Animated.timing(animatedValue, {
-        toValue: 0,
-        duration: duration * 1000,
-        useNativeDriver: false,
-      }).start();
-
-      // Update progress state for rendering using a listener
-      const progressListener = animatedValue.addListener(({ value }) => {
-        setProgress(value);
-      });
-
-      // Report initial time
-      if (onTimeUpdateRef.current) {
-        onTimeUpdateRef.current(duration);
-      }
-
-      // Countdown timer
-      intervalRef.current = setInterval(() => {
-        setRemainingTime((prev) => {
-          const newTime = Math.max(0, prev - 1);
-          // Notify parent of time update
-          if (onTimeUpdateRef.current && newTime > 0) {
-            onTimeUpdateRef.current(newTime);
-          }
-          if (newTime <= 0 && !hasCompletedRef.current) {
-            hasCompletedRef.current = true;
-            clearInterval(intervalRef.current);
-            // Call onComplete asynchronously to avoid setState during render
-            setTimeout(() => {
-              onCompleteRef.current();
-            }, 0);
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-
-      return () => {
-        if (intervalRef.current) {
+        if (newValue <= 0 && !hasCompletedRef.current) {
+          hasCompletedRef.current = true;
           clearInterval(intervalRef.current);
+
+          // Slight async to avoid render-cycle crash
+          setTimeout(() => {
+            onComplete && onComplete();
+          }, 30);
+
+          return 0;
         }
-        animatedValue.removeListener(progressListener);
-      };
-    } else {
-      // Reset when inactive
-      hasCompletedRef.current = false;
-      setRemainingTime(duration);
-      setProgress(1);
-      animatedValue.setValue(1);
-      scaleAnim.setValue(1);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    }
+
+        return newValue;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalRef.current);
+    };
   }, [isActive, duration]);
 
-  const radius = 120; // Increased from 80 to 120
-  const circumference = 2 * Math.PI * radius;
-  const strokeWidth = 12; // Increased from 8 to 12
-  const strokeDashoffset = circumference * (1 - progress);
-  const svgSize = radius * 2 + strokeWidth * 2 + 20; // Extra space for glow
+  const resetTimer = () => {
+    hasCompletedRef.current = false;
+    setRemainingTime(duration);
+    animatedValue.setValue(1);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  };
+
+  // Map animation value to stroke offset
+  const strokeDashoffset = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, circumference], // 1 → full circle, 0 → empty
+  });
 
   return (
     <View className="items-center justify-center">
@@ -153,41 +85,24 @@ export default function Timer({
         height={svgSize}
         style={{ transform: [{ rotate: "-90deg" }] }}
       >
-        <Defs>
-          {/* Outer glow for pink progress ring */}
-          <RadialGradient id="glow" cx="50%" cy="50%">
-            <Stop offset="0%" stopColor="#FF4FA3" stopOpacity="0.6" />
-            <Stop offset="70%" stopColor="#FF4FA3" stopOpacity="0.3" />
-            <Stop offset="100%" stopColor="#FF4FA3" stopOpacity="0" />
-          </RadialGradient>
-        </Defs>
-
-        {/* Glow layer - subtle outer glow */}
-        <Circle
-          cx={svgSize / 2}
-          cy={svgSize / 2}
-          r={radius + 8}
-          fill="url(#glow)"
-          opacity={progress < 1 ? 0.4 : 0}
-        />
-
-        {/* Remaining stroke - muted grey */}
+        {/* Background Ring */}
         <Circle
           cx={svgSize / 2}
           cy={svgSize / 2}
           r={radius}
           stroke="#2D2F34"
           strokeWidth={strokeWidth}
-          fill="transparent"
+          fill="none"
         />
-        {/* Progress stroke - pink accent with glow effect */}
-        <Circle
-          cx={svgSize / 2}
-          cy={svgSize / 2}
+
+        {/* Animated Countdown Ring */}
+        <AnimatedCircle
+          cx={100}
+          cy={100}
           r={radius}
           stroke="#FF4FA3"
           strokeWidth={strokeWidth}
-          fill="transparent"
+          fill="none"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
@@ -195,8 +110,8 @@ export default function Timer({
         />
       </Svg>
 
-      {/* Number with breathing animation */}
-      <Animated.View
+      {/* Timer Number */}
+      <View
         style={{
           position: "absolute",
           alignItems: "center",
@@ -206,13 +121,12 @@ export default function Timer({
       >
         <Text
           style={{
-            fontSize: 56,
+            fontSize: 48,
             fontWeight: "bold",
             color: "#FF4FA3",
-            textAlign: "center",
           }}
         >
-          {Math.ceil(remainingTime)}
+          {remainingTime}
         </Text>
       </Animated.View>
     </View>
