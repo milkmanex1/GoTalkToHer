@@ -1,53 +1,66 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Animated } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, Animated } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 
 export default function Timer({ duration, onComplete, isActive }) {
   const [remainingTime, setRemainingTime] = useState(duration);
   const [progress, setProgress] = useState(1);
   const intervalRef = useRef(null);
   const animatedValue = useRef(new Animated.Value(1)).current;
+  const hasCompletedRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+
+  // Keep onComplete ref up to date
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     if (isActive) {
+      // Reset completion flag
+      hasCompletedRef.current = false;
       setRemainingTime(duration);
       setProgress(1);
       animatedValue.setValue(1);
-      
+
       // Animate progress from 1 to 0
       Animated.timing(animatedValue, {
         toValue: 0,
         duration: duration * 1000,
         useNativeDriver: false,
       }).start();
-      
-      // Update progress state for rendering
-      const progressInterval = setInterval(() => {
-        animatedValue.addListener(({ value }) => {
-          setProgress(value);
-        });
-      }, 50);
-      
+
+      // Update progress state for rendering using a listener
+      const progressListener = animatedValue.addListener(({ value }) => {
+        setProgress(value);
+      });
+
       // Countdown timer
       intervalRef.current = setInterval(() => {
         setRemainingTime((prev) => {
           const newTime = Math.max(0, prev - 1);
-          if (newTime <= 0) {
+          if (newTime <= 0 && !hasCompletedRef.current) {
+            hasCompletedRef.current = true;
             clearInterval(intervalRef.current);
-            clearInterval(progressInterval);
-            onComplete();
+            // Call onComplete asynchronously to avoid setState during render
+            setTimeout(() => {
+              onCompleteRef.current();
+            }, 0);
             return 0;
           }
           return newTime;
         });
       }, 1000);
-      
+
       return () => {
-        clearInterval(intervalRef.current);
-        clearInterval(progressInterval);
-        animatedValue.removeAllListeners();
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+        animatedValue.removeListener(progressListener);
       };
     } else {
+      // Reset when inactive
+      hasCompletedRef.current = false;
       setRemainingTime(duration);
       setProgress(1);
       animatedValue.setValue(1);
@@ -55,13 +68,6 @@ export default function Timer({ duration, onComplete, isActive }) {
         clearInterval(intervalRef.current);
       }
     }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      animatedValue.removeAllListeners();
-    };
   }, [isActive, duration]);
 
   const radius = 80;
@@ -71,7 +77,11 @@ export default function Timer({ duration, onComplete, isActive }) {
 
   return (
     <View className="items-center justify-center">
-      <Svg width={200} height={200} style={{ transform: [{ rotate: '-90deg' }] }}>
+      <Svg
+        width={200}
+        height={200}
+        style={{ transform: [{ rotate: "-90deg" }] }}
+      >
         {/* Remaining stroke - muted grey */}
         <Circle
           cx={100}
@@ -94,13 +104,18 @@ export default function Timer({ duration, onComplete, isActive }) {
           strokeLinecap="round"
         />
       </Svg>
-      <View style={{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }}>
+      <View
+        style={{
+          position: "absolute",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         {/* Large pink bold number */}
-        <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#FF4FA3' }}>
+        <Text style={{ fontSize: 40, fontWeight: "bold", color: "#FF4FA3" }}>
           {Math.ceil(remainingTime)}
         </Text>
       </View>
     </View>
   );
 }
-

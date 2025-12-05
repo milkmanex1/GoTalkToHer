@@ -7,7 +7,7 @@ import Button from "../components/Button";
 import { Storage } from "../lib/storage";
 import { supabase } from "../lib/supabase";
 
-const DURATION = 15; // Fixed timer duration
+const DURATION = 20; // Fixed timer duration
 
 export default function ApproachTimerScreen({ navigation }) {
   const [isActive, setIsActive] = useState(false);
@@ -85,12 +85,28 @@ export default function ApproachTimerScreen({ navigation }) {
       {!isActive && !timerComplete && (
         <View className="flex-1 items-center justify-center px-6">
           <View className="mb-12">
-            <Text style={{ fontSize: 22, fontWeight: '600', color: '#FFFFFF', marginBottom: 12, textAlign: 'center' }}>
+            <Text
+              style={{
+                fontSize: 22,
+                fontWeight: "600",
+                color: "#FFFFFF",
+                marginBottom: 12,
+                textAlign: "center",
+              }}
+            >
               Ready to take action?
             </Text>
-            <Text style={{ fontSize: 16, color: '#D0D0D0', textAlign: 'center', paddingHorizontal: 16, lineHeight: 22.4 }}>
-              When you're ready, tap the button below. The timer will count
-              down from {DURATION} seconds, and when it reaches zero, it's time to approach.
+            <Text
+              style={{
+                fontSize: 16,
+                color: "#D0D0D0",
+                textAlign: "center",
+                paddingHorizontal: 16,
+                lineHeight: 22.4,
+              }}
+            >
+              You have {DURATION} seconds. When it reaches zero, it's time to
+              approach.
             </Text>
           </View>
 
@@ -115,12 +131,19 @@ export default function ApproachTimerScreen({ navigation }) {
             />
             {/* Motivation text below = small + white */}
             <View className="mt-12 px-4">
-              <Text style={{ fontSize: 14, color: '#FFFFFF', textAlign: 'center', lineHeight: 19.6 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: "#FFFFFF",
+                  textAlign: "center",
+                  lineHeight: 19.6,
+                }}
+              >
                 Take a breath. Give yourself whatever excuses you need.
               </Text>
             </View>
           </View>
-          
+
           {/* Cancel button at bottom - secondary style (outline pink) */}
           <View className="pb-5 px-6">
             <Button
@@ -138,11 +161,28 @@ export default function ApproachTimerScreen({ navigation }) {
           <View className="mb-12 items-center">
             <Text className="text-5xl mb-8">🎯</Text>
             {/* Large bold pink headline */}
-            <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#FF4FA3', textAlign: 'center', marginBottom: 16, lineHeight: 46.8 }}>
+            <Text
+              style={{
+                fontSize: 36,
+                fontWeight: "bold",
+                color: "#FF4FA3",
+                textAlign: "center",
+                marginBottom: 16,
+                lineHeight: 46.8,
+              }}
+            >
               Go now.
             </Text>
             {/* Subtext in soft white */}
-            <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', textAlign: 'center', lineHeight: 28 }}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "600",
+                color: "#FFFFFF",
+                textAlign: "center",
+                lineHeight: 28,
+              }}
+            >
               You've got this.
             </Text>
           </View>
