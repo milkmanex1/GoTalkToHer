@@ -31,8 +31,8 @@ export class ErrorBoundary extends React.Component {
               {this.state.error || 'An unexpected error occurred'}
             </Text>
             {this.state.errorInfo && (
-              <ScrollView className="bg-gray-100 p-4 rounded-lg mb-6 max-h-48">
-                <Text className="text-xs text-textSecondary font-mono">
+              <ScrollView className="bg-surface border border-border p-4 rounded-lg mb-6 max-h-48">
+                <Text style={{ fontSize: 12, color: '#A0A0A0', fontFamily: 'monospace' }}>
                   {this.state.errorInfo}
                 </Text>
               </ScrollView>

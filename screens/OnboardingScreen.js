@@ -71,34 +71,39 @@ export default function OnboardingScreen({ navigation }) {
 
   return (
     <ScrollView className="flex-1 bg-background">
-      <View className="px-6 py-12">
-        <Text className="text-3xl font-bold text-text mb-4 text-center">
+      <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
+        {/* Large Title: 26-28 bold */}
+        <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 16, textAlign: 'center', lineHeight: 36.4 }}>
           Welcome to Go Talk To Her
         </Text>
-        <Text className="text-base text-textSecondary mb-8 text-center">
+        {/* Body: 16-18 regular */}
+        <Text style={{ fontSize: 16, color: '#D0D0D0', marginBottom: 48, textAlign: 'center', lineHeight: 22.4 }}>
           We're here to help you overcome approach anxiety and build confidence
           in real-world interactions. Let's get started!
         </Text>
 
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-text mb-2">
+        {/* Component spacing: 20-28 */}
+        <View style={{ marginBottom: 24 }}>
+          {/* Medium Title: 20-22 semi-bold */}
+          <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
             Name / Nickname
           </Text>
           <TextInput
-            className="bg-surface border border-gray-200 rounded-xl px-4 py-3 text-base text-text"
+            className="bg-surface border border-border rounded-xl px-4 py-3"
+            style={{ fontSize: 16, color: '#FFFFFF' }}
             placeholder="Enter your name"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#A0A0A0"
             value={name}
             onChangeText={setName}
             autoCapitalize="words"
           />
         </View>
 
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-text mb-2">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
             Age Range
           </Text>
-          <View className="bg-surface border border-gray-200 rounded-xl overflow-hidden">
+          <View className="bg-surface border border-border rounded-xl overflow-hidden">
             <Picker
               selectedValue={ageRange}
               onValueChange={setAgeRange}
@@ -111,12 +116,12 @@ export default function OnboardingScreen({ navigation }) {
           </View>
         </View>
 
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-text mb-2">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
             Confidence Level: {confidenceLevel}/10
           </Text>
           <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-textSecondary">Low</Text>
+            <Text style={{ fontSize: 13, color: '#A0A0A0' }}>Low</Text>
             <View className="flex-1 mx-4">
               <View className="flex-row">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
@@ -124,21 +129,21 @@ export default function OnboardingScreen({ navigation }) {
                     key={level}
                     onTouchEnd={() => setConfidenceLevel(level)}
                     className={`flex-1 h-10 mx-0.5 rounded-lg ${
-                      level <= confidenceLevel ? "bg-primary" : "bg-gray-200"
+                      level <= confidenceLevel ? "bg-primary" : "bg-border"
                     }`}
                   />
                 ))}
               </View>
             </View>
-            <Text className="text-sm text-textSecondary">High</Text>
+            <Text style={{ fontSize: 13, color: '#A0A0A0' }}>High</Text>
           </View>
         </View>
 
-        <View className="mb-8">
-          <Text className="text-lg font-semibold text-text mb-2">
+        <View style={{ marginBottom: 40 }}>
+          <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
             Biggest Challenge
           </Text>
-          <View className="bg-surface border border-gray-200 rounded-xl overflow-hidden">
+          <View className="bg-surface border border-border rounded-xl overflow-hidden">
             <Picker
               selectedValue={biggestChallenge}
               onValueChange={setBiggestChallenge}
@@ -160,6 +165,7 @@ export default function OnboardingScreen({ navigation }) {
           onPress={handleSubmit}
           disabled={loading}
           loading={loading}
+          className="w-full"
         />
       </View>
     </ScrollView>

@@ -69,33 +69,33 @@ export default function MotivationBoostScreen({ navigation }) {
 
   return (
     <ScrollView className="flex-1 bg-background">
-      <View className="px-6 py-8">
+      <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
         <Button
           title={loading ? 'Generating...' : 'Give me a fresh quote'}
           onPress={handleGenerateQuote}
           disabled={loading}
           loading={loading}
-          variant="accent"
+          variant="primary"
           className="mb-6"
         />
 
         {aiQuote && (
-          <Card className="mb-6 bg-accent/10 border-accent">
-            <Text className="text-lg font-semibold text-text mb-2">
+          <Card className="mb-6" style={{ backgroundColor: 'rgba(255, 79, 163, 0.1)', borderColor: '#FF4FA3' }}>
+            <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
               Your Personalized Quote
             </Text>
-            <Text className="text-base text-text italic">"{aiQuote}"</Text>
+            <Text style={{ fontSize: 16, color: '#FFFFFF', fontStyle: 'italic', lineHeight: 22.4 }}>"{aiQuote}"</Text>
           </Card>
         )}
 
         {Object.entries(MOTIVATION_QUOTES).map(([category, quotes]) => (
-          <View key={category} className="mb-6">
-            <Text className="text-xl font-semibold text-text mb-3">
+          <View key={category} style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 22, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
               {category}
             </Text>
             {quotes.map((quote, index) => (
               <Card key={index} className="mb-3">
-                <Text className="text-base text-text italic">"{quote}"</Text>
+                <Text style={{ fontSize: 16, color: '#FFFFFF', fontStyle: 'italic', lineHeight: 22.4 }}>"{quote}"</Text>
               </Card>
             ))}
           </View>

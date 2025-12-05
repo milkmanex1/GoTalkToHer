@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
 import Timer from "../components/Timer";
@@ -8,22 +7,13 @@ import Button from "../components/Button";
 import { Storage } from "../lib/storage";
 import { supabase } from "../lib/supabase";
 
-const DURATIONS = [10, 15, 20];
+const DURATION = 15; // Fixed timer duration
 
 export default function ApproachTimerScreen({ navigation }) {
-  const [duration, setDuration] = useState(15);
   const [isActive, setIsActive] = useState(false);
   const [timerComplete, setTimerComplete] = useState(false);
   const [sound, setSound] = useState(null);
   const [timerStartedAt, setTimerStartedAt] = useState(null);
-
-  useEffect(() => {
-    const loadDuration = async () => {
-      const savedDuration = await Storage.getTimerDuration();
-      setDuration(savedDuration);
-    };
-    loadDuration();
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -90,101 +80,79 @@ export default function ApproachTimerScreen({ navigation }) {
     setTimerStartedAt(null);
   };
 
-  const handleDurationChange = async (newDuration) => {
-    setDuration(newDuration);
-    await Storage.setTimerDuration(newDuration);
-  };
-
   return (
     <View className="flex-1 bg-background">
       {!isActive && !timerComplete && (
         <View className="flex-1 items-center justify-center px-6">
-          <View className="mb-12 w-full">
-            <Text className="text-base font-semibold text-textSecondary mb-3 text-center">
-              Timer Duration
-            </Text>
-            <View className="bg-darkSurface border border-gray-800 rounded-xl overflow-hidden">
-              <Picker
-                selectedValue={duration}
-                onValueChange={handleDurationChange}
-                style={{ color: "#FFFFFF" }}
-              >
-                {DURATIONS.map((dur) => (
-                  <Picker.Item
-                    key={dur}
-                    label={`${dur} seconds`}
-                    value={dur}
-                  />
-                ))}
-              </Picker>
-            </View>
-          </View>
-
           <View className="mb-12">
-            <Text className="text-2xl font-bold text-white mb-3 text-center">
+            <Text style={{ fontSize: 22, fontWeight: '600', color: '#FFFFFF', marginBottom: 12, textAlign: 'center' }}>
               Ready to take action?
             </Text>
-            <Text className="text-base text-textSecondary text-center px-4">
+            <Text style={{ fontSize: 16, color: '#D0D0D0', textAlign: 'center', paddingHorizontal: 16, lineHeight: 22.4 }}>
               When you're ready, tap the button below. The timer will count
-              down, and when it reaches zero, it's time to approach.
+              down from {DURATION} seconds, and when it reaches zero, it's time to approach.
             </Text>
           </View>
 
-          <Button
-            title="Start Timer"
-            onPress={handleStart}
-            className="w-full"
-          />
+          <View className="w-full px-6">
+            <Button
+              title="Start Timer"
+              onPress={handleStart}
+              className="w-full"
+            />
+          </View>
         </View>
       )}
 
       {isActive && (
         <View className="flex-1">
-          {/* Centered timer with reduced padding */}
+          {/* Large circular countdown centered vertically */}
           <View className="flex-1 items-center justify-center px-6">
             <Timer
-              duration={duration}
+              duration={DURATION}
               onComplete={handleComplete}
               isActive={isActive}
             />
-            {/* Motivational text under circle */}
+            {/* Motivation text below = small + white */}
             <View className="mt-12 px-4">
-              <Text className="text-base text-textSecondary text-center">
+              <Text style={{ fontSize: 14, color: '#FFFFFF', textAlign: 'center', lineHeight: 19.6 }}>
                 Take a breath. Give yourself whatever excuses you need.
               </Text>
             </View>
           </View>
           
-          {/* Cancel button at bottom */}
-          <View className="pb-8 px-6">
-            <TouchableOpacity
+          {/* Cancel button at bottom - secondary style (outline pink) */}
+          <View className="pb-5 px-6">
+            <Button
+              title="Cancel"
               onPress={handleReset}
-              className="py-3 px-6 border border-primary rounded-full items-center"
-            >
-              <Text className="text-textSecondary font-semibold text-sm">
-                Cancel
-              </Text>
-            </TouchableOpacity>
+              variant="secondary"
+              className="w-full"
+            />
           </View>
         </View>
       )}
 
       {timerComplete && (
         <View className="flex-1 items-center justify-center px-6">
-          <View className="mb-12">
-            <Text className="text-4xl mb-6">🎯</Text>
-            <Text className="text-4xl font-bold text-primary text-center mb-4">
+          <View className="mb-12 items-center">
+            <Text className="text-5xl mb-8">🎯</Text>
+            {/* Large bold pink headline */}
+            <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#FF4FA3', textAlign: 'center', marginBottom: 16, lineHeight: 46.8 }}>
               Go now.
             </Text>
-            <Text className="text-2xl font-semibold text-white text-center">
+            {/* Subtext in soft white */}
+            <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', textAlign: 'center', lineHeight: 28 }}>
               You've got this.
             </Text>
           </View>
-          <Button
-            title="Start New Timer"
-            onPress={handleReset}
-            className="w-full"
-          />
+          <View className="w-full px-6">
+            <Button
+              title="Start New Timer"
+              onPress={handleReset}
+              className="w-full"
+            />
+          </View>
         </View>
       )}
     </View>

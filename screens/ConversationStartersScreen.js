@@ -141,7 +141,7 @@ export default function ConversationStartersScreen({ navigation }) {
 
   return (
     <ScrollView className="flex-1 bg-background">
-      <View className="px-6 py-8">
+      <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
         <Button
           title={loading ? "Generating..." : "Generate Personalized Opener"}
           onPress={handleGeneratePersonalized}
@@ -152,16 +152,16 @@ export default function ConversationStartersScreen({ navigation }) {
         />
 
         {aiGenerated && (
-          <Card className="mb-6 bg-secondary/10 border-secondary">
-            <Text className="text-lg font-semibold text-text mb-2">
+          <Card className="mb-6" style={{ backgroundColor: 'rgba(255, 79, 163, 0.1)', borderColor: '#FF4FA3' }}>
+            <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
               AI-Generated Opener
             </Text>
-            <Text className="text-base text-text">{aiGenerated}</Text>
+            <Text style={{ fontSize: 16, color: '#FFFFFF', lineHeight: 22.4 }}>{aiGenerated}</Text>
           </Card>
         )}
 
         {Object.entries(CONVERSATION_STARTERS).map(([category, items]) => (
-          <View key={category} className="mb-6">
+          <View key={category} style={{ marginBottom: 24 }}>
             <TouchableOpacity
               onPress={() =>
                 setExpandedCategory(
@@ -171,10 +171,10 @@ export default function ConversationStartersScreen({ navigation }) {
             >
               <Card>
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-xl font-semibold text-text">
+                  <Text style={{ fontSize: 22, fontWeight: '600', color: '#FFFFFF' }}>
                     {category}
                   </Text>
-                  <Text className="text-2xl">
+                  <Text style={{ fontSize: 18, color: '#FFFFFF' }}>
                     {expandedCategory === category ? "▼" : "▶"}
                   </Text>
                 </View>
@@ -196,10 +196,10 @@ export default function ConversationStartersScreen({ navigation }) {
                         }
                       >
                         <Card className="mb-2">
-                          <Text className="text-base font-medium text-text mb-1">
+                          <Text style={{ fontSize: 16, fontWeight: '500', color: '#FFFFFF', marginBottom: 8 }}>
                             "{starter.opener}"
                           </Text>
-                          <Text className="text-sm text-textSecondary">
+                          <Text style={{ fontSize: 13, color: '#A0A0A0' }}>
                             Tap to see details →
                           </Text>
                           {expandedStarter === `${category}-${index}` && (

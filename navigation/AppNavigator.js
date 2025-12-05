@@ -19,11 +19,14 @@ export default function AppNavigator() {
         initialRouteName="Onboarding"
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#6366f1',
+            backgroundColor: '#0E0F12',
+            borderBottomColor: '#2D2F34',
+            borderBottomWidth: 1,
           },
-          headerTintColor: '#fff',
+          headerTintColor: '#FFFFFF',
           headerTitleStyle: {
             fontWeight: 'bold',
+            color: '#FFFFFF',
           },
         }}
       >

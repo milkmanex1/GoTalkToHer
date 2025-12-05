@@ -122,17 +122,17 @@ export default function PostActionReviewScreen({ navigation }) {
   if (submitted && aiFeedback) {
     return (
       <ScrollView className="flex-1 bg-background">
-        <View className="px-6 py-8">
-          <Card className="mb-6 bg-primary/10 border-primary">
-            <Text className="text-2xl font-bold text-primary mb-4 text-center">
+        <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+          <Card className="mb-6" style={{ backgroundColor: 'rgba(255, 79, 163, 0.1)', borderColor: '#FF4FA3' }}>
+            <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#FF4FA3', marginBottom: 16, textAlign: 'center', lineHeight: 33.8 }}>
               Great job taking action! 🎉
             </Text>
-            <Text className="text-lg font-semibold text-text mb-3">
+            <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
               AI Feedback:
             </Text>
-            <Text className="text-base text-text">{aiFeedback}</Text>
+            <Text style={{ fontSize: 16, color: '#FFFFFF', lineHeight: 22.4 }}>{aiFeedback}</Text>
           </Card>
-          <Button title="Submit Another Review" onPress={handleReset} />
+          <Button title="Submit Another Review" onPress={handleReset} className="w-full" />
         </View>
       </ScrollView>
     );
@@ -140,13 +140,13 @@ export default function PostActionReviewScreen({ navigation }) {
 
   return (
     <ScrollView className="flex-1 bg-background">
-      <View className="px-6 py-8">
-        <Text className="text-xl font-semibold text-text mb-6">
+      <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+        <Text style={{ fontSize: 22, fontWeight: '600', color: '#FFFFFF', marginBottom: 24 }}>
           How did it go?
         </Text>
 
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-text mb-3">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
             Outcome
           </Text>
           {OUTCOMES.map((outcome) => (
@@ -157,16 +157,17 @@ export default function PostActionReviewScreen({ navigation }) {
               <Card
                 className={`mb-2 ${
                   selectedOutcome === outcome.id
-                    ? 'bg-primary/10 border-primary border-2'
+                    ? 'border-primary border-2'
                     : ''
                 }`}
+                style={selectedOutcome === outcome.id ? { backgroundColor: 'rgba(255, 79, 163, 0.1)' } : {}}
               >
                 <Text
-                  className={`text-base ${
-                    selectedOutcome === outcome.id
-                      ? 'font-semibold text-primary'
-                      : 'text-text'
-                  }`}
+                  style={{
+                    fontSize: 16,
+                    fontWeight: selectedOutcome === outcome.id ? '600' : '400',
+                    color: selectedOutcome === outcome.id ? '#FF4FA3' : '#FFFFFF',
+                  }}
                 >
                   {outcome.label}
                 </Text>
@@ -175,13 +176,15 @@ export default function PostActionReviewScreen({ navigation }) {
           ))}
         </View>
 
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-text mb-2">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
             What happened?
           </Text>
           <TextInput
-            className="bg-surface border border-gray-200 rounded-xl px-4 py-3 text-base min-h-[100px]"
+            className="bg-surface border border-border rounded-xl px-4 py-3 min-h-[100px]"
+            style={{ fontSize: 16, color: '#FFFFFF', textAlignVertical: 'top' }}
             placeholder="Describe what happened..."
+            placeholderTextColor="#A0A0A0"
             value={whatHappened}
             onChangeText={setWhatHappened}
             multiline
@@ -189,13 +192,15 @@ export default function PostActionReviewScreen({ navigation }) {
           />
         </View>
 
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-text mb-2">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
             How did you feel?
           </Text>
           <TextInput
-            className="bg-surface border border-gray-200 rounded-xl px-4 py-3 text-base min-h-[100px]"
+            className="bg-surface border border-border rounded-xl px-4 py-3 min-h-[100px]"
+            style={{ fontSize: 16, color: '#FFFFFF', textAlignVertical: 'top' }}
             placeholder="Share your feelings..."
+            placeholderTextColor="#A0A0A0"
             value={howTheyFelt}
             onChangeText={setHowTheyFelt}
             multiline
@@ -208,6 +213,7 @@ export default function PostActionReviewScreen({ navigation }) {
           onPress={handleSubmit}
           disabled={loading}
           loading={loading}
+          className="w-full"
         />
       </View>
     </ScrollView>

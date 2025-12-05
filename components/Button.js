@@ -9,18 +9,22 @@ export default function Button({
   loading = false,
   className = '',
 }) {
-  const baseClasses = 'px-6 py-4 rounded-full items-center justify-center min-h-[52px]';
+  // Primary: Pink background, white text, 60-70px height, full pill
+  // Secondary: Transparent, pink border, pink text, 48-52px height
+  const baseClasses = variant === 'primary' 
+    ? 'px-6 rounded-full items-center justify-center min-h-[60px] max-h-[70px]'
+    : 'px-6 rounded-full items-center justify-center min-h-[48px] max-h-[52px] border-2';
+  
   const variantClasses = {
     primary: 'bg-primary',
-    secondary: 'bg-secondary',
-    accent: 'bg-accent',
-    outline: 'bg-transparent border border-primary',
+    secondary: 'bg-transparent border-primary',
+    outline: 'bg-transparent border-primary',
   };
+  
   const textClasses = {
     primary: 'text-white font-bold text-lg',
-    secondary: 'text-white font-bold text-lg',
-    accent: 'text-white font-bold text-lg',
-    outline: 'text-textSecondary font-semibold text-base',
+    secondary: 'text-primary font-semibold text-base',
+    outline: 'text-primary font-semibold text-base',
   };
 
   return (
@@ -30,7 +34,7 @@ export default function Button({
       className={`${baseClasses} ${variantClasses[variant]} ${disabled || loading ? 'opacity-50' : ''} ${className}`}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' ? '#FF3E84' : '#ffffff'} />
+        <ActivityIndicator color={variant === 'primary' ? '#ffffff' : '#FF4FA3'} />
       ) : (
         <Text className={textClasses[variant]}>{title}</Text>
       )}

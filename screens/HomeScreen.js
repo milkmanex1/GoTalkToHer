@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
 import { Storage } from "../lib/storage";
+import { TAGLINE_COMBOS } from "../constants/taglines";
 
 const SECONDARY_FEATURES = [
   {
@@ -34,9 +35,13 @@ const SECONDARY_FEATURES = [
 export default function HomeScreen({ navigation }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [tagline, setTagline] = useState(TAGLINE_COMBOS[0]);
 
   useEffect(() => {
     loadUserProfile();
+    // Randomly select a tagline combo on mount
+    const randomIndex = Math.floor(Math.random() * TAGLINE_COMBOS.length);
+    setTagline(TAGLINE_COMBOS[randomIndex]);
   }, []);
 
   const loadUserProfile = async () => {
@@ -72,34 +77,56 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Main centered content */}
+      {/* Main centered hero block - vertically centered */}
       <View className="flex-1 items-center justify-center px-6">
-        {/* Icon/Illustration placeholder */}
-        <View className="mb-12">
-          <Text className="text-6xl">⏱️</Text>
+        {/* Large heart chat image */}
+        <View className="mb-6" style={{ width: 200, height: 200 }}>
+          <Image
+            source={require("../assets/images/heart_chat.png")}
+            style={{ width: "100%", height: "100%", resizeMode: "contain" }}
+          />
         </View>
 
-        {/* Motivational header */}
-        <View className="items-center mb-16">
-          <Text className="text-5xl font-bold text-white mb-4 text-center">
-            Go Now.
+        {/* Large headline: Random tagline (pink) */}
+        <View className="items-center mb-12">
+          <Text
+            style={{
+              fontSize: 36,
+              fontWeight: "bold",
+              color: "#FF4FA3",
+              textAlign: "center",
+              lineHeight: 46.8,
+            }}
+          >
+            {tagline.headline}
           </Text>
-          <Text className="text-xl text-textSecondary text-center">
-            You've got this.
+          {/* Subtitle: Random subtext (white/grey) */}
+          <Text
+            style={{
+              fontSize: 18,
+              color: "#D0D0D0",
+              textAlign: "center",
+              marginTop: 12,
+              lineHeight: 25.2,
+            }}
+          >
+            {tagline.subtext}
           </Text>
         </View>
 
-        {/* Single giant action button */}
-        <Button
-          title="Start Approach Timer"
-          onPress={() => navigation.navigate("ApproachTimer")}
-          className="w-full mb-20"
-        />
+        {/* One BIG primary button: Start Approach Timer */}
+        <View className="w-full px-6">
+          <Button
+            title="Start Approach Timer"
+            onPress={() => navigation.navigate("ApproachTimer")}
+            className="w-full"
+          />
+        </View>
       </View>
 
-      {/* Secondary links as bottom icon bar */}
-      <View className="pb-8 px-6">
-        <View className="flex-row justify-around items-center border-t border-gray-800 pt-6">
+      {/* Secondary features as bottom icon bar */}
+      <View className="pb-5 px-6">
+        <View className="flex-row justify-around items-center border-t border-border pt-5">
           {SECONDARY_FEATURES.map((feature) => (
             <TouchableOpacity
               key={feature.id}
@@ -107,7 +134,9 @@ export default function HomeScreen({ navigation }) {
               className="items-center flex-1"
             >
               <Text className="text-2xl mb-1">{feature.icon}</Text>
-              <Text className="text-xs text-textSecondary">{feature.label}</Text>
+              <Text style={{ fontSize: 12, color: "#A0A0A0" }}>
+                {feature.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>

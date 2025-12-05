@@ -10,17 +10,28 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#FF3E84',
+        // Primary Accent (Pink)
+        primary: '#FF4FA3',
         secondary: '#FF4FA3',
-        accent: '#FF3E84',
-        background: '#0F0F12',
-        surface: '#111',
-        text: '#FFFFFF',
-        textSecondary: '#9CA3AF',
-        pink: '#FF3E84',
+        accent: '#FF4FA3',
+        pink: '#FF4FA3',
         pinkAccent: '#FF4FA3',
-        dark: '#0F0F12',
-        darkSurface: '#111',
+        
+        // Dark Background
+        background: '#0E0F12',
+        dark: '#0E0F12',
+        
+        // Surface Layer (Cards, Panels)
+        surface: '#1A1C20',
+        darkSurface: '#1A1C20',
+        
+        // Text Colors
+        text: '#FFFFFF', // High-emphasis
+        textMedium: '#D0D0D0', // Medium-emphasis
+        textSecondary: '#A0A0A0', // Low-emphasis
+        
+        // Borders / Lines
+        border: '#2D2F34',
       },
     },
   },

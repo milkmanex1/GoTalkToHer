@@ -72,19 +72,21 @@ export default function Timer({ duration, onComplete, isActive }) {
   return (
     <View className="items-center justify-center">
       <Svg width={200} height={200} style={{ transform: [{ rotate: '-90deg' }] }}>
+        {/* Remaining stroke - muted grey */}
         <Circle
           cx={100}
           cy={100}
           r={radius}
-          stroke="#374151"
+          stroke="#2D2F34"
           strokeWidth={strokeWidth}
           fill="transparent"
         />
+        {/* Progress stroke - pink accent */}
         <Circle
           cx={100}
           cy={100}
           r={radius}
-          stroke="#FF3E84"
+          stroke="#FF4FA3"
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={circumference}
@@ -93,7 +95,8 @@ export default function Timer({ duration, onComplete, isActive }) {
         />
       </Svg>
       <View style={{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }}>
-        <Text className="text-6xl font-bold text-white">
+        {/* Large pink bold number */}
+        <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#FF4FA3' }}>
           {Math.ceil(remainingTime)}
         </Text>
       </View>
