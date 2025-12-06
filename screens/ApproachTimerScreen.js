@@ -108,11 +108,12 @@ export default function ApproachTimerScreen({ navigation }) {
 
     // Save timer event to Supabase
     try {
-      const userId = await Storage.getUserId();
-      if (userId) {
+      const { data: auth } = await supabase.auth.getUser();
+      if (auth?.user) {
+        const authUserId = auth.user.id;
         await supabase.from("approach_events").insert([
           {
-            user_id: userId,
+            user_id: authUserId,
             timer_started_at: timerStartedAt,
             timer_completed: true,
             outcome: "timer_completed",

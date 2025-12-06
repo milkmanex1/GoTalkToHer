@@ -4,6 +4,7 @@
 -- Create user_profile table
 CREATE TABLE IF NOT EXISTS user_profile (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  auth_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
   name TEXT NOT NULL,
   age_range TEXT,
   confidence_level INTEGER CHECK (confidence_level >= 1 AND confidence_level <= 10),
@@ -16,10 +17,14 @@ CREATE TABLE IF NOT EXISTS user_profile (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create index for auth_user_id lookup
+CREATE INDEX IF NOT EXISTS idx_user_profile_auth_user_id ON user_profile(auth_user_id);
+
 -- Create approach_events table
+-- Note: user_id now stores auth.users(id) instead of user_profile(id)
 CREATE TABLE IF NOT EXISTS approach_events (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES user_profile(id) ON DELETE CASCADE,
+  user_id UUID, -- References auth.users(id) - app code ensures this
   outcome TEXT,
   notes TEXT,
   ai_feedback TEXT,
@@ -29,9 +34,10 @@ CREATE TABLE IF NOT EXISTS approach_events (
 );
 
 -- Create chat_messages table
+-- Note: user_id now stores auth.users(id) instead of user_profile(id)
 CREATE TABLE IF NOT EXISTS chat_messages (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES user_profile(id) ON DELETE CASCADE,
+  user_id UUID, -- References auth.users(id) - app code ensures this
   role TEXT CHECK (role IN ('user', 'assistant')) NOT NULL,
   content TEXT NOT NULL,
   timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()

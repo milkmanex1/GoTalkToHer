@@ -46,22 +46,45 @@ export default function HomeScreen({ navigation }) {
 
   const loadUserProfile = async () => {
     try {
-      const userId = await Storage.getUserId();
-      if (!userId) {
+      // Get the authenticated user
+      const { data: auth, error: authError } = await supabase.auth.getUser();
+      if (authError || !auth?.user) {
+        // No authenticated user, redirect to login/onboarding
         navigation.replace("Onboarding");
         return;
       }
 
+      const authUserId = auth.user.id;
+
+      // Load profile by auth_user_id
       const { data, error } = await supabase
         .from("user_profile")
         .select("*")
-        .eq("id", userId)
+        .eq("auth_user_id", authUserId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Profile doesn't exist, redirect to onboarding
+        if (error.code === "PGRST116") {
+          navigation.replace("Onboarding");
+          return;
+        }
+        throw error;
+      }
+
+      if (!data) {
+        // No profile found, redirect to onboarding
+        navigation.replace("Onboarding");
+        return;
+      }
+
       setUserProfile(data);
+      // Store auth user ID for quick access
+      await Storage.setAuthUserId(authUserId);
     } catch (error) {
       console.error("Error loading profile:", error);
+      // On error, redirect to onboarding
+      navigation.replace("Onboarding");
     } finally {
       setLoading(false);
     }

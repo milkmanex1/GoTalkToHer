@@ -29,29 +29,36 @@ export default function WingmanChatScreen({ navigation }) {
 
   const loadUserProfileAndHistory = async () => {
     try {
-      const userId = await Storage.getUserId();
-      if (!userId) {
-        Alert.alert('Error', 'Please complete onboarding first');
+      // Get the authenticated user
+      const { data: auth, error: authError } = await supabase.auth.getUser();
+      if (authError || !auth?.user) {
+        Alert.alert('Error', 'You must be logged in to use the chat');
         navigation.goBack();
         return;
       }
 
-      // Load user profile
+      const authUserId = auth.user.id;
+
+      // Load user profile by auth_user_id
       const { data: profile } = await supabase
         .from('user_profile')
         .select('*')
-        .eq('id', userId)
+        .eq('auth_user_id', authUserId)
         .single();
 
       if (profile) {
         setUserProfile(profile);
+      } else {
+        Alert.alert('Error', 'Profile not found. Please complete onboarding first.');
+        navigation.replace('Onboarding');
+        return;
       }
 
-      // Load recent chat history
+      // Load recent chat history using auth_user_id
       const { data: history } = await supabase
         .from('chat_messages')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', authUserId)
         .order('timestamp', { ascending: true })
         .limit(20);
 
@@ -92,16 +99,24 @@ export default function WingmanChatScreen({ navigation }) {
     setMessages((prev) => [...prev, newUserMessage]);
 
     try {
-      const userId = await Storage.getUserId();
+      // Get the authenticated user
+      const { data: auth, error: authError } = await supabase.auth.getUser();
+      if (authError || !auth?.user) {
+        Alert.alert('Error', 'You must be logged in to send messages');
+        return;
+      }
+
+      const authUserId = auth.user.id;
+
       if (!userProfile) {
         Alert.alert('Error', 'Profile not found');
         return;
       }
 
-      // Save user message to database
+      // Save user message to database using auth_user_id
       await supabase.from('chat_messages').insert([
         {
-          user_id: userId,
+          user_id: authUserId,
           role: 'user',
           content: userMessage,
         },
@@ -122,10 +137,10 @@ export default function WingmanChatScreen({ navigation }) {
       const assistantMessage = { role: 'assistant', content: aiResponse };
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // Save AI response to database
+      // Save AI response to database using auth_user_id
       await supabase.from('chat_messages').insert([
         {
-          user_id: userId,
+          user_id: authUserId,
           role: 'assistant',
           content: aiResponse,
         },

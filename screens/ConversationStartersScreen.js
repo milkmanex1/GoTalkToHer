@@ -110,20 +110,25 @@ export default function ConversationStartersScreen({ navigation }) {
   const handleGeneratePersonalized = async () => {
     setLoading(true);
     try {
-      const userId = await Storage.getUserId();
-      if (!userId) {
-        Alert.alert("Error", "Please complete onboarding first");
+      // Get the authenticated user
+      const { data: auth, error: authError } = await supabase.auth.getUser();
+      if (authError || !auth?.user) {
+        Alert.alert("Error", "You must be logged in to generate openers");
         return;
       }
 
+      const authUserId = auth.user.id;
+
+      // Load profile by auth_user_id
       const { data: profile } = await supabase
         .from("user_profile")
         .select("*")
-        .eq("id", userId)
+        .eq("auth_user_id", authUserId)
         .single();
 
       if (!profile) {
-        Alert.alert("Error", "Profile not found");
+        Alert.alert("Error", "Profile not found. Please complete onboarding first.");
+        navigation.replace("Onboarding");
         return;
       }
 

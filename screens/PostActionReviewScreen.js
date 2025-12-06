@@ -43,20 +43,25 @@ export default function PostActionReviewScreen({ navigation }) {
 
     setLoading(true);
     try {
-      const userId = await Storage.getUserId();
-      if (!userId) {
-        Alert.alert('Error', 'Please complete onboarding first');
+      // Get the authenticated user
+      const { data: auth, error: authError } = await supabase.auth.getUser();
+      if (authError || !auth?.user) {
+        Alert.alert('Error', 'You must be logged in to submit a review');
         return;
       }
 
+      const authUserId = auth.user.id;
+
+      // Load profile by auth_user_id
       const { data: profile } = await supabase
         .from('user_profile')
         .select('*')
-        .eq('id', userId)
+        .eq('auth_user_id', authUserId)
         .single();
 
       if (!profile) {
-        Alert.alert('Error', 'Profile not found');
+        Alert.alert('Error', 'Profile not found. Please complete onboarding first.');
+        navigation.replace('Onboarding');
         return;
       }
 
@@ -74,10 +79,10 @@ export default function PostActionReviewScreen({ navigation }) {
 
       setAiFeedback(feedback);
 
-      // Save to database
+      // Save to database using auth_user_id
       const { error } = await supabase.from('approach_events').insert([
         {
-          user_id: userId,
+          user_id: authUserId,
           outcome: selectedOutcome,
           notes: JSON.stringify(notes),
           ai_feedback: feedback,
@@ -93,14 +98,14 @@ export default function PostActionReviewScreen({ navigation }) {
           .update({
             past_successes: (profile.past_successes || 0) + 1,
           })
-          .eq('id', userId);
+          .eq('auth_user_id', authUserId);
       } else if (selectedOutcome === 'not_interested') {
         await supabase
           .from('user_profile')
           .update({
             past_rejections: (profile.past_rejections || 0) + 1,
           })
-          .eq('id', userId);
+          .eq('auth_user_id', authUserId);
       }
 
       setSubmitted(true);
