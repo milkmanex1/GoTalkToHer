@@ -19,7 +19,10 @@ export default function ProfileScreen({ navigation }) {
   const loadUserProfile = async () => {
     try {
       // Get the authenticated user
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
       if (authError || !user) {
         navigation.replace("Login");
         return;
@@ -133,7 +136,9 @@ export default function ProfileScreen({ navigation }) {
               Age Range
             </Text>
             <View className="bg-surface border border-border rounded-xl px-4 py-3">
-              <Text style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}>
+              <Text
+                style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}
+              >
                 {userProfile.age_range}
               </Text>
             </View>
@@ -155,7 +160,9 @@ export default function ProfileScreen({ navigation }) {
           </Text>
           <View className="bg-surface border border-border rounded-xl px-4 py-3">
             <View className="flex-row items-center justify-between">
-              <Text style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}>
+              <Text
+                style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}
+              >
                 {userProfile.confidence_level || 0}/10
               </Text>
               <View className="flex-row flex-1 mx-4">
@@ -189,7 +196,9 @@ export default function ProfileScreen({ navigation }) {
               Biggest Challenge
             </Text>
             <View className="bg-surface border border-border rounded-xl px-4 py-3">
-              <Text style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}>
+              <Text
+                style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}
+              >
                 {userProfile.biggest_challenge}
               </Text>
             </View>
@@ -211,7 +220,9 @@ export default function ProfileScreen({ navigation }) {
               Fear Type
             </Text>
             <View className="bg-surface border border-border rounded-xl px-4 py-3">
-              <Text style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}>
+              <Text
+                style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}
+              >
                 {userProfile.fear_type}
               </Text>
             </View>
@@ -240,11 +251,14 @@ export default function ProfileScreen({ navigation }) {
                   style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}
                 >
                   {env}
-                  {index < userProfile.preferred_environments.length - 1 && ", "}
+                  {index < userProfile.preferred_environments.length - 1 &&
+                    ", "}
                 </Text>
               ))
             ) : (
-              <Text style={{ fontSize: 18, color: "#A0A0A0", fontWeight: "600" }}>
+              <Text
+                style={{ fontSize: 18, color: "#A0A0A0", fontWeight: "600" }}
+              >
                 None set
               </Text>
             )}
@@ -336,4 +350,3 @@ export default function ProfileScreen({ navigation }) {
     </ScrollView>
   );
 }
-

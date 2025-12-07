@@ -18,7 +18,7 @@ import { supabase } from "../lib/supabase";
 
 const { width, height } = Dimensions.get("window");
 
-const DURATION = 10; // Fixed timer duration
+const DURATION = 15; // Fixed timer duration
 
 const MOTIVATIONAL_MESSAGES = [
   "Go even if you're not ready.",
@@ -26,11 +26,26 @@ const MOTIVATIONAL_MESSAGES = [
   "Do it scared.",
   "Lead with your feet.",
   "Don't wait. Move.",
-  "I'm with you — go.",
   "Trust yourself. Just move.",
   "This is how confidence is built.",
   "One moment of courage. That's all.",
   "You've got this",
+];
+
+const TIMER_COUNTDOWN_MESSAGES = [
+  "Fear is normal. It means you're alive.",
+  "It's okay to feel nervous. Anyone would.",
+  "You're allowed to feel scared and still be strong.",
+  "Courage doesn't feel calm. It feels like this.",
+  "You don't have to fight the fear. Just let it be.",
+  "This is what growth feels like—shaky, a little scary, but human.",
+  "Your fear is not a problem. It's part of the process.",
+  "This tension means you're growing.",
+  "It's okay to feel this way. Really.",
+  "Breathe… you're doing better than you think.", 
+  "You're not alone. So many feel exactly like this.",
+  "Give yourself a little grace. This is hard.",
+  "You're braver than you think.",
 ];
 
 export default function ApproachTimerScreen({ navigation }) {
@@ -41,6 +56,9 @@ export default function ApproachTimerScreen({ navigation }) {
   const [remainingTime, setRemainingTime] = useState(DURATION);
   const [motivationalMessage, setMotivationalMessage] = useState(
     MOTIVATIONAL_MESSAGES[0]
+  );
+  const [countdownMessage, setCountdownMessage] = useState(
+    TIMER_COUNTDOWN_MESSAGES[0]
   );
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const bottomTextOpacity = useRef(new Animated.Value(0)).current;
@@ -70,6 +88,11 @@ export default function ApproachTimerScreen({ navigation }) {
     setIsActive(true);
     setTimerComplete(false);
     setRemainingTime(DURATION);
+    // Randomly select a countdown message
+    const randomIndex = Math.floor(
+      Math.random() * TIMER_COUNTDOWN_MESSAGES.length
+    );
+    setCountdownMessage(TIMER_COUNTDOWN_MESSAGES[randomIndex]);
     // Fade in bottom text
     Animated.timing(bottomTextOpacity, {
       toValue: 1,
@@ -227,8 +250,7 @@ export default function ApproachTimerScreen({ navigation }) {
                 marginBottom: 12,
               }}
             >
-              You have {DURATION} seconds. When it reaches zero, it's time to
-              approach.
+              You have {DURATION} seconds. When it hits zero, you approach her.
             </Text>
             <Text
               style={{
@@ -246,11 +268,7 @@ export default function ApproachTimerScreen({ navigation }) {
           </View>
 
           <View className="w-full px-6">
-            <Button
-              title="Start Timer"
-              onPress={handleStart}
-              className="w-full"
-            />
+            <Button title="Let's Go" onPress={handleStart} className="w-full" />
           </View>
         </View>
       )}
@@ -262,11 +280,6 @@ export default function ApproachTimerScreen({ navigation }) {
             style={[styles.flashOverlay, { opacity: flashOpacity }]}
             pointerEvents="none"
           />
-
-          {/* Motivational micro-text above */}
-          <View style={styles.topTextContainer}>
-            <Text style={styles.topText}>You're braver than you think.</Text>
-          </View>
 
           {/* Large circular countdown centered */}
           <View className="flex-1 items-center justify-center px-6">
@@ -284,9 +297,7 @@ export default function ApproachTimerScreen({ navigation }) {
                 { opacity: bottomTextOpacity },
               ]}
             >
-              <Text style={styles.bottomText}>
-                Take a breath. The world favors the bold.
-              </Text>
+              <Text style={styles.bottomText}>{countdownMessage}</Text>
             </Animated.View>
           </View>
 
@@ -312,8 +323,8 @@ export default function ApproachTimerScreen({ navigation }) {
               <Image
                 source={require("../assets/images/pink_lightning.png")}
                 style={{
-                  width: 120,
-                  height: 120,
+                  width: 180,
+                  height: 180,
                   resizeMode: "contain",
                   marginBottom: 32,
                 }}
@@ -393,17 +404,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     width: width * 0.2,
-  },
-  topTextContainer: {
-    paddingTop: 80,
-    paddingHorizontal: 20,
-    alignItems: "center",
-  },
-  topText: {
-    fontSize: 14.5,
-    color: "#D0D0D0",
-    opacity: 0.8,
-    textAlign: "center",
   },
   bottomTextContainer: {
     marginTop: 48,
