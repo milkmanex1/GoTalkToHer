@@ -18,9 +18,13 @@ export default function Timer({
   const radius = 80;
   const strokeWidth = 8;
   const circumference = 2 * Math.PI * radius;
+  const svgSize = 200; // Size of the SVG container
 
   // Convert Circle into an animated component
   const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+  // Scale animation for the timer number
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (!isActive) {
@@ -97,8 +101,8 @@ export default function Timer({
 
         {/* Animated Countdown Ring */}
         <AnimatedCircle
-          cx={100}
-          cy={100}
+          cx={svgSize / 2}
+          cy={svgSize / 2}
           r={radius}
           stroke="#FF4FA3"
           strokeWidth={strokeWidth}
@@ -111,7 +115,7 @@ export default function Timer({
       </Svg>
 
       {/* Timer Number */}
-      <View
+      <Animated.View
         style={{
           position: "absolute",
           alignItems: "center",

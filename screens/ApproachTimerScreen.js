@@ -6,6 +6,7 @@ import {
   Animated,
   StyleSheet,
   Dimensions,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
@@ -19,12 +20,28 @@ const { width, height } = Dimensions.get("window");
 
 const DURATION = 20; // Fixed timer duration
 
+const MOTIVATIONAL_MESSAGES = [
+  "Go even if you're not ready.",
+  "Go while afraid.",
+  "Do it scared.",
+  "Lead with your feet.",
+  "Don't wait. Move.",
+  "I'm with you — go.",
+  "Trust yourself. Just move.",
+  "This is how confidence is built.",
+  "One moment of courage. That's all.",
+  "You've got this",
+];
+
 export default function ApproachTimerScreen({ navigation }) {
   const [isActive, setIsActive] = useState(false);
   const [timerComplete, setTimerComplete] = useState(false);
   const [sound, setSound] = useState(null);
   const [timerStartedAt, setTimerStartedAt] = useState(null);
   const [remainingTime, setRemainingTime] = useState(DURATION);
+  const [motivationalMessage, setMotivationalMessage] = useState(
+    MOTIVATIONAL_MESSAGES[0]
+  );
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const bottomTextOpacity = useRef(new Animated.Value(0)).current;
   const flashOpacity = useRef(new Animated.Value(0)).current;
@@ -84,6 +101,10 @@ export default function ApproachTimerScreen({ navigation }) {
 
   const handleComplete = async () => {
     setIsActive(false);
+
+    // Randomly select a motivational message
+    const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length);
+    setMotivationalMessage(MOTIVATIONAL_MESSAGES[randomIndex]);
 
     // Smooth fade transition
     fadeAnim.setValue(0);
@@ -170,6 +191,17 @@ export default function ApproachTimerScreen({ navigation }) {
 
       {!isActive && !timerComplete && (
         <View className="flex-1 items-center justify-center px-6">
+          <View className="mb-12 items-center justify-center">
+            <Image
+              source={require("../assets/images/stopwatch.png")}
+              style={{
+                width: 200,
+                height: 200,
+                resizeMode: "contain",
+              }}
+            />
+          </View>
+
           <View className="mb-12">
             <Text
               style={{
@@ -189,10 +221,23 @@ export default function ApproachTimerScreen({ navigation }) {
                 textAlign: "center",
                 paddingHorizontal: 16,
                 lineHeight: 22.4,
+                marginBottom: 12,
               }}
             >
               You have {DURATION} seconds. When it reaches zero, it's time to
               approach.
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#A0A0A0",
+                textAlign: "center",
+                paddingHorizontal: 16,
+                lineHeight: 20,
+                fontStyle: "italic",
+              }}
+            >
+              A proven cognitive technique that overrides fear and helps you act instantly.
             </Text>
           </View>
 
@@ -260,7 +305,15 @@ export default function ApproachTimerScreen({ navigation }) {
         >
           <View className="flex-1 items-center justify-center px-6">
             <View className="mb-12 items-center">
-              <Text className="text-5xl mb-8">🎯</Text>
+              <Image
+                source={require("../assets/images/pink_lightning.png")}
+                style={{
+                  width: 120,
+                  height: 120,
+                  resizeMode: "contain",
+                  marginBottom: 32,
+                }}
+              />
               {/* Large bold pink headline */}
               <Text
                 style={{
@@ -284,7 +337,7 @@ export default function ApproachTimerScreen({ navigation }) {
                   lineHeight: 28,
                 }}
               >
-                You've got this.
+                {motivationalMessage}
               </Text>
             </View>
             <View className="w-full px-6">
