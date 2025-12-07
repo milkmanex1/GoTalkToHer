@@ -18,7 +18,7 @@ import { supabase } from "../lib/supabase";
 
 const { width, height } = Dimensions.get("window");
 
-const DURATION = 20; // Fixed timer duration
+const DURATION = 10; // Fixed timer duration
 
 const MOTIVATIONAL_MESSAGES = [
   "Go even if you're not ready.",
@@ -103,7 +103,9 @@ export default function ApproachTimerScreen({ navigation }) {
     setIsActive(false);
 
     // Randomly select a motivational message
-    const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length);
+    const randomIndex = Math.floor(
+      Math.random() * MOTIVATIONAL_MESSAGES.length
+    );
     setMotivationalMessage(MOTIVATIONAL_MESSAGES[randomIndex]);
 
     // Smooth fade transition
@@ -238,7 +240,8 @@ export default function ApproachTimerScreen({ navigation }) {
                 fontStyle: "italic",
               }}
             >
-              A proven cognitive technique that overrides fear and helps you act instantly.
+              A proven cognitive technique that overrides fear and helps you act
+              instantly.
             </Text>
           </View>
 
@@ -343,7 +346,7 @@ export default function ApproachTimerScreen({ navigation }) {
             </View>
             <View className="w-full px-6">
               <Button
-                title="Start New Timer"
+                title="Try again"
                 onPress={handleReset}
                 className="w-full"
               />

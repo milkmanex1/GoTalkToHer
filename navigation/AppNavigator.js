@@ -1,18 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { supabase } from '../lib/supabase';
-import LoginScreen from '../screens/LoginScreen';
-import RegisterScreen from '../screens/RegisterScreen';
-import OnboardingScreen from '../screens/OnboardingScreen';
-import HomeScreen from '../screens/HomeScreen';
-import ApproachTimerScreen from '../screens/ApproachTimerScreen';
-import ConversationStartersScreen from '../screens/ConversationStartersScreen';
-import MotivationBoostScreen from '../screens/MotivationBoostScreen';
-import PostActionReviewScreen from '../screens/PostActionReviewScreen';
-import WingmanChatScreen from '../screens/WingmanChatScreen';
-import TestScreen from '../screens/TestScreen';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { supabase } from "../lib/supabase";
+import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen";
+import OnboardingScreen from "../screens/OnboardingScreen";
+import HomeScreen from "../screens/HomeScreen";
+import ApproachTimerScreen from "../screens/ApproachTimerScreen";
+import ConversationStartersScreen from "../screens/ConversationStartersScreen";
+import MotivationBoostScreen from "../screens/MotivationBoostScreen";
+import PostActionReviewScreen from "../screens/PostActionReviewScreen";
+import WingmanChatScreen from "../screens/WingmanChatScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import TestScreen from "../screens/TestScreen";
 
 const Stack = createStackNavigator();
 
@@ -24,28 +31,28 @@ export default function AppNavigator() {
     checkAuthAndRoute();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session) {
-          // User is signed in, check if profile exists
-          const { data: profile } = await supabase
-            .from('user_profile')
-            .select('*')
-            .eq('auth_user_id', session.user.id)
-            .single();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        // User is signed in, check if profile exists
+        const { data: profile } = await supabase
+          .from("user_profile")
+          .select("*")
+          .eq("auth_user_id", session.user.id)
+          .single();
 
-          if (profile) {
-            setInitialRoute('Home');
-          } else {
-            setInitialRoute('Onboarding');
-          }
+        if (profile) {
+          setInitialRoute("Home");
         } else {
-          // User is signed out
-          setInitialRoute('Login');
+          setInitialRoute("Onboarding");
         }
-        setLoading(false);
+      } else {
+        // User is signed out
+        setInitialRoute("Login");
       }
-    );
+      setLoading(false);
+    });
 
     return () => {
       subscription.unsubscribe();
@@ -55,11 +62,14 @@ export default function AppNavigator() {
   const checkAuthAndRoute = async () => {
     try {
       // Check if session exists
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
       if (error || !session) {
         // No session, go to login
-        setInitialRoute('Login');
+        setInitialRoute("Login");
         setLoading(false);
         return;
       }
@@ -68,22 +78,22 @@ export default function AppNavigator() {
 
       // Check if profile exists
       const { data: profile } = await supabase
-        .from('user_profile')
-        .select('*')
-        .eq('auth_user_id', authUserId)
+        .from("user_profile")
+        .select("*")
+        .eq("auth_user_id", authUserId)
         .single();
 
       if (profile) {
         // Profile exists, go to home
-        setInitialRoute('Home');
+        setInitialRoute("Home");
       } else {
         // No profile, go to onboarding
-        setInitialRoute('Onboarding');
+        setInitialRoute("Onboarding");
       }
     } catch (error) {
-      console.error('Error checking auth state:', error);
+      console.error("Error checking auth state:", error);
       // On error, default to login
-      setInitialRoute('Login');
+      setInitialRoute("Login");
     } finally {
       setLoading(false);
     }
@@ -91,9 +101,16 @@ export default function AppNavigator() {
 
   if (loading || !initialRoute) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0E0F12' }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#0E0F12",
+        }}
+      >
         <ActivityIndicator size="large" color="#FF4FA3" />
-        <Text style={{ color: '#D0D0D0', marginTop: 16 }}>Loading...</Text>
+        <Text style={{ color: "#D0D0D0", marginTop: 16 }}>Loading...</Text>
       </View>
     );
   }
@@ -104,69 +121,87 @@ export default function AppNavigator() {
         initialRouteName={initialRoute}
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#0E0F12',
-            borderBottomColor: '#2D2F34',
+            backgroundColor: "#0E0F12",
+            borderBottomColor: "#2D2F34",
             borderBottomWidth: 1,
           },
-          headerTintColor: '#FFFFFF',
+          headerTintColor: "#FFFFFF",
           headerTitleStyle: {
-            fontWeight: 'bold',
-            color: '#FFFFFF',
+            fontWeight: "bold",
+            color: "#FFFFFF",
           },
         }}
       >
-        <Stack.Screen 
-          name="Test" 
+        <Stack.Screen
+          name="Test"
           component={TestScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="Login" 
+        <Stack.Screen
+          name="Login"
           component={LoginScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="Register" 
+        <Stack.Screen
+          name="Register"
           component={RegisterScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="Onboarding" 
+        <Stack.Screen
+          name="Onboarding"
           component={OnboardingScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="Home" 
+        <Stack.Screen
+          name="Home"
           component={HomeScreen}
-          options={{ title: 'Go Talk To Her' }}
+          options={({ navigation }) => ({
+            title: "Go Talk To Her",
+            headerRight: () => (
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Profile")}
+                style={{ marginRight: 16, padding: 4 }}
+              >
+                <Image
+                  source={require("../assets/images/user_icon_1.png")}
+                  style={{ width: 32, height: 32 }}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            ),
+          })}
         />
-        <Stack.Screen 
-          name="ApproachTimer" 
+        <Stack.Screen
+          name="ApproachTimer"
           component={ApproachTimerScreen}
-          options={{ title: 'Approach Timer' }}
+          options={{ title: "Approach Timer" }}
         />
-        <Stack.Screen 
-          name="ConversationStarters" 
+        <Stack.Screen
+          name="ConversationStarters"
           component={ConversationStartersScreen}
-          options={{ title: 'Conversation Starters' }}
+          options={{ title: "Conversation Starters" }}
         />
-        <Stack.Screen 
-          name="MotivationBoost" 
+        <Stack.Screen
+          name="MotivationBoost"
           component={MotivationBoostScreen}
-          options={{ title: 'Motivation Boost' }}
+          options={{ title: "Motivation Boost" }}
         />
-        <Stack.Screen 
-          name="PostActionReview" 
+        <Stack.Screen
+          name="PostActionReview"
           component={PostActionReviewScreen}
-          options={{ title: 'Post-Action Review' }}
+          options={{ title: "Post-Action Review" }}
         />
-        <Stack.Screen 
-          name="WingmanChat" 
+        <Stack.Screen
+          name="WingmanChat"
           component={WingmanChatScreen}
-          options={{ title: 'Wingman AI Chat' }}
+          options={{ title: "Wingman AI Chat" }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{ title: "Your Profile" }}
         />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
