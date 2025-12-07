@@ -10,7 +10,6 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
-import { Storage } from "../lib/storage";
 import { handleError } from "../lib/errorHandler";
 
 const CHALLENGES = [
@@ -39,116 +38,45 @@ export default function OnboardingScreen({ navigation }) {
 
     setLoading(true);
     try {
-      // Get or create authenticated user
-      let authUserId;
-      let { data: auth, error: authError } = await supabase.auth.getUser();
+      // Get authenticated user - must exist at this point (from RegisterScreen)
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
 
-      if (authError || !auth?.user) {
-        // No authenticated user, create an anonymous session
-        // Generate a unique email for anonymous user (UUID-based to ensure uniqueness)
-        const uuid = () => {
-          return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-            /[xy]/g,
-            function (c) {
-              const r = (Math.random() * 16) | 0;
-              const v = c === "x" ? r : (r & 0x3) | 0x8;
-              return v.toString(16);
-            }
-          );
-        };
-
-        const anonymousEmail = `${uuid()}@anonymous.talktoher.app`;
-        const anonymousPassword = uuid() + uuid(); // Long random password
-
-        // Sign up with anonymous credentials
-        // Note: Make sure email confirmation is disabled in Supabase Auth settings
-        const { data: signUpData, error: signUpError } =
-          await supabase.auth.signUp({
-            email: anonymousEmail,
-            password: anonymousPassword,
-            options: {
-              emailRedirectTo: undefined,
-              data: {
-                is_anonymous: true,
-              },
-            },
-          });
-
-        if (signUpError) {
-          // If sign up fails, try to sign in (in case user already exists somehow)
-          const { data: signInData, error: signInError } =
-            await supabase.auth.signInWithPassword({
-              email: anonymousEmail,
-              password: anonymousPassword,
-            });
-
-          if (signInError || !signInData?.user) {
-            console.error("Sign up error:", signUpError);
-            console.error("Sign in error:", signInError);
-            throw new Error(
-              "Failed to create user session. Please check your Supabase Auth settings - email confirmation should be disabled."
-            );
-          }
-
-          authUserId = signInData.user.id;
-        } else if (!signUpData?.user) {
-          throw new Error("Failed to create user session. Please try again.");
-        } else {
-          authUserId = signUpData.user.id;
-
-          // Check if we have a session (email confirmation might be required)
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-          if (!session) {
-            // If no session, email confirmation might be required
-            // Try to get the user anyway - RLS might still work
-            console.warn(
-              "No session after signup - email confirmation might be required"
-            );
-          }
-        }
-      } else {
-        authUserId = auth.user.id;
-      }
-
-      // Check if profile already exists
-      const { data: existingProfile } = await supabase
-        .from("user_profile")
-        .select("*")
-        .eq("auth_user_id", authUserId)
-        .single();
-
-      if (existingProfile) {
-        // Profile already exists, skip onboarding
-        await Storage.setAuthUserId(authUserId);
-        navigation.replace("Home");
+      if (authError || !user) {
+        // No authenticated user, redirect to login
+        Alert.alert("Error", "Please sign in to continue");
+        navigation.replace("Login");
         return;
       }
 
-      // Insert new profile with auth_user_id
-      const { data, error } = await supabase
+      const authUserId = user.id;
+
+      // Update existing profile (created in RegisterScreen)
+      const { error } = await supabase
         .from("user_profile")
-        .insert([
-          {
-            auth_user_id: authUserId,
-            name: name.trim(),
-            age_range: ageRange,
-            confidence_level: confidenceLevel,
-            biggest_challenge: biggestChallenge,
-            fear_type: biggestChallenge,
-            preferred_environments: [],
-            past_successes: 0,
-            past_rejections: 0,
-          },
-        ])
-        .select()
-        .single();
+        .update({
+          name: name.trim(),
+          age_range: ageRange,
+          confidence_level: confidenceLevel,
+          biggest_challenge: biggestChallenge,
+          fear_type: biggestChallenge,
+        })
+        .eq("auth_user_id", authUserId);
 
-      if (error) throw error;
-
-      // Save auth user ID to local storage
-      await Storage.setAuthUserId(authUserId);
+      if (error) {
+        // If update fails, profile might not exist (shouldn't happen, but handle gracefully)
+        if (error.code === "PGRST116" || error.message?.includes("No rows")) {
+          Alert.alert(
+            "Error",
+            "Profile not found. Please register again or contact support."
+          );
+          navigation.replace("Register");
+          return;
+        }
+        throw error;
+      }
 
       navigation.replace("Home");
     } catch (error) {

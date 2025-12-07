@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
-import { Storage } from "../lib/storage";
 import { TAGLINE_COMBOS } from "../constants/taglines";
 
 const SECONDARY_FEATURES = [
@@ -47,14 +46,14 @@ export default function HomeScreen({ navigation }) {
   const loadUserProfile = async () => {
     try {
       // Get the authenticated user
-      const { data: auth, error: authError } = await supabase.auth.getUser();
-      if (authError || !auth?.user) {
-        // No authenticated user, redirect to login/onboarding
-        navigation.replace("Onboarding");
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        // No authenticated user, redirect to login
+        navigation.replace("Login");
         return;
       }
 
-      const authUserId = auth.user.id;
+      const authUserId = user.id;
 
       // Load profile by auth_user_id
       const { data, error } = await supabase
@@ -79,12 +78,10 @@ export default function HomeScreen({ navigation }) {
       }
 
       setUserProfile(data);
-      // Store auth user ID for quick access
-      await Storage.setAuthUserId(authUserId);
     } catch (error) {
       console.error("Error loading profile:", error);
-      // On error, redirect to onboarding
-      navigation.replace("Onboarding");
+      // On error, redirect to login
+      navigation.replace("Login");
     } finally {
       setLoading(false);
     }

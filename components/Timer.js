@@ -132,7 +132,7 @@ export default function Timer({
         >
           {remainingTime}
         </Text>
-      </View>
+      </Animated.View>
     </View>
   );
 }

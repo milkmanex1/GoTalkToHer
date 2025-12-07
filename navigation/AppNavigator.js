@@ -3,6 +3,8 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { supabase } from '../lib/supabase';
+import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ApproachTimerScreen from '../screens/ApproachTimerScreen';
@@ -20,21 +22,49 @@ export default function AppNavigator() {
 
   useEffect(() => {
     checkAuthAndRoute();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session) {
+          // User is signed in, check if profile exists
+          const { data: profile } = await supabase
+            .from('user_profile')
+            .select('*')
+            .eq('auth_user_id', session.user.id)
+            .single();
+
+          if (profile) {
+            setInitialRoute('Home');
+          } else {
+            setInitialRoute('Onboarding');
+          }
+        } else {
+          // User is signed out
+          setInitialRoute('Login');
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const checkAuthAndRoute = async () => {
     try {
-      // Check if user is authenticated
-      const { data: auth, error: authError } = await supabase.auth.getUser();
+      // Check if session exists
+      const { data: { session }, error } = await supabase.auth.getSession();
       
-      if (authError || !auth?.user) {
-        // No authenticated user, go to onboarding
-        setInitialRoute('Onboarding');
+      if (error || !session) {
+        // No session, go to login
+        setInitialRoute('Login');
         setLoading(false);
         return;
       }
 
-      const authUserId = auth.user.id;
+      const authUserId = session.user.id;
 
       // Check if profile exists
       const { data: profile } = await supabase
@@ -52,8 +82,8 @@ export default function AppNavigator() {
       }
     } catch (error) {
       console.error('Error checking auth state:', error);
-      // On error, default to onboarding
-      setInitialRoute('Onboarding');
+      // On error, default to login
+      setInitialRoute('Login');
     } finally {
       setLoading(false);
     }
@@ -88,6 +118,16 @@ export default function AppNavigator() {
         <Stack.Screen 
           name="Test" 
           component={TestScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Login" 
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Register" 
+          component={RegisterScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen 
