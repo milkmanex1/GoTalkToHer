@@ -50,7 +50,7 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={[]}>
       <ScrollView 
         className="flex-1 bg-background"
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}

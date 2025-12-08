@@ -164,7 +164,7 @@ export default function WingmanChatScreen({ navigation }) {
 
   if (loadingHistory) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={['top']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={[]}>
         <View className="flex-1 items-center justify-center bg-background">
           <Text style={{ color: '#A0A0A0' }}>Loading chat...</Text>
         </View>
@@ -173,7 +173,7 @@ export default function WingmanChatScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={[]}>
       <KeyboardAvoidingView
         className="flex-1 bg-background"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

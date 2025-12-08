@@ -73,7 +73,7 @@ export default function ProfileScreen({ navigation }) {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={[]}>
         <View className="flex-1 items-center justify-center bg-background">
           <ActivityIndicator size="large" color="#FF4FA3" />
           <Text className="text-textSecondary mt-4">Loading profile...</Text>
@@ -84,7 +84,7 @@ export default function ProfileScreen({ navigation }) {
 
   if (!userProfile) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={[]}>
         <View className="flex-1 items-center justify-center bg-background">
           <Text className="text-textSecondary">Profile not found</Text>
         </View>
@@ -93,7 +93,7 @@ export default function ProfileScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={[]}>
       <ScrollView 
         className="flex-1 bg-background"
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}

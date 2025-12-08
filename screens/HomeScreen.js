@@ -67,10 +67,7 @@ export default function HomeScreen({ navigation }) {
 
   if (loading) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: "#000000" }}
-        edges={["top"]}
-      >
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
         <View className="flex-1 items-center justify-center bg-background">
           <Text className="text-textSecondary">Loading...</Text>
         </View>
@@ -79,14 +76,14 @@ export default function HomeScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#000000" }}
-      edges={["top"]}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
       {/* Main centered hero block - vertically centered */}
       <View className="flex-1 items-center justify-center px-6">
         {/* Large heart chat image */}
-        <View className="mb-6" style={{ width: 200, height: 200 }}>
+        <View
+          className="mb-6"
+          style={{ width: 200, height: 200, marginTop: 40 }}
+        >
           <Image
             source={require("../assets/images/heart_chat.png")}
             style={{ width: "100%", height: "100%", resizeMode: "contain" }}

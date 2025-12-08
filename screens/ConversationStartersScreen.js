@@ -149,10 +149,7 @@ export default function ConversationStartersScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#0E0F12" }}
-      edges={["top"]}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
       <ScrollView
         className="flex-1 bg-background"
         contentContainerStyle={{ paddingBottom: 20 }}

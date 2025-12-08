@@ -184,10 +184,7 @@ export default function ApproachTimerScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#000000" }}
-      edges={["top"]}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
       <LinearGradient
         colors={["#181C24", "#101014", "#000000"]}
         locations={[0, 0.5, 1]}
