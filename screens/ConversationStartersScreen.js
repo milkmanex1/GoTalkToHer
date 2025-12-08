@@ -128,7 +128,10 @@ export default function ConversationStartersScreen({ navigation }) {
         .single();
 
       if (!profile) {
-        Alert.alert("Error", "Profile not found. Please complete onboarding first.");
+        Alert.alert(
+          "Error",
+          "Profile not found. Please complete onboarding first."
+        );
         navigation.replace("Onboarding");
         return;
       }
@@ -146,171 +149,211 @@ export default function ConversationStartersScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
-      <ScrollView 
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#0E0F12" }}
+      edges={["top"]}
+    >
+      <ScrollView
         className="flex-1 bg-background"
         contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
-        <Button
-          title={loading ? "Generating..." : "Generate Personalized Opener"}
-          onPress={handleGeneratePersonalized}
-          disabled={loading}
-          loading={loading}
-          variant="secondary"
-          className="mb-6"
-        />
+          <Button
+            title={loading ? "Generating..." : "Generate Personalized Opener"}
+            onPress={handleGeneratePersonalized}
+            disabled={loading}
+            loading={loading}
+            variant="secondary"
+            className="mb-6"
+          />
 
-        {aiGenerated && (
-          <Card className="mb-6" style={{ backgroundColor: 'rgba(255, 79, 163, 0.1)', borderColor: '#FF4FA3' }}>
-            <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginBottom: 12 }}>
-              AI-Generated Opener
-            </Text>
-            <Text style={{ fontSize: 16, color: '#FFFFFF', lineHeight: 22.4 }}>{aiGenerated}</Text>
-          </Card>
-        )}
-
-        {Object.entries(CONVERSATION_STARTERS).map(([category, items]) => (
-          <View key={category} style={{ marginBottom: 24 }}>
-            <TouchableOpacity
-              onPress={() =>
-                setExpandedCategory(
-                  expandedCategory === category ? null : category
-                )
-              }
+          {aiGenerated && (
+            <Card
+              className="mb-6"
+              style={{
+                backgroundColor: "rgba(255, 79, 163, 0.1)",
+                borderColor: "#FF4FA3",
+              }}
             >
-              <Card>
-                <View className="flex-row items-center justify-between">
-                  <Text style={{ fontSize: 22, fontWeight: '600', color: '#FFFFFF' }}>
-                    {category}
-                  </Text>
-                  <Text style={{ fontSize: 18, color: '#FFFFFF' }}>
-                    {expandedCategory === category ? "▼" : "▶"}
-                  </Text>
-                </View>
-              </Card>
-            </TouchableOpacity>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: "#FFFFFF",
+                  marginBottom: 12,
+                }}
+              >
+                AI-Generated Opener
+              </Text>
+              <Text
+                style={{ fontSize: 16, color: "#FFFFFF", lineHeight: 24.4 }}
+              >
+                {aiGenerated}
+              </Text>
+            </Card>
+          )}
 
-            {expandedCategory === category && (
-              <View className="mt-2 ml-4">
-                {Array.isArray(items)
-                  ? items.map((starter, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() =>
-                          setExpandedStarter(
-                            expandedStarter === `${category}-${index}`
-                              ? null
-                              : `${category}-${index}`
-                          )
-                        }
-                      >
-                        <Card className="mb-2">
-                          <Text style={{ fontSize: 16, fontWeight: '500', color: '#FFFFFF', marginBottom: 8 }}>
-                            "{starter.opener}"
-                          </Text>
-                          <Text style={{ fontSize: 13, color: '#A0A0A0' }}>
-                            Tap to see details →
-                          </Text>
-                          {expandedStarter === `${category}-${index}` && (
-                            <View className="mt-4">
-                              <Text className="text-sm font-semibold text-text mb-1">
-                                Tone: {starter.tone}
-                              </Text>
-                              <Text className="text-sm font-semibold text-text mb-1 mt-2">
-                                Do's:
-                              </Text>
-                              {starter.dos.map((doItem, i) => (
-                                <Text
-                                  key={i}
-                                  className="text-sm text-textSecondary ml-2"
-                                >
-                                  • {doItem}
+          {Object.entries(CONVERSATION_STARTERS).map(([category, items]) => (
+            <View key={category} style={{ marginBottom: 24 }}>
+              <TouchableOpacity
+                onPress={() =>
+                  setExpandedCategory(
+                    expandedCategory === category ? null : category
+                  )
+                }
+              >
+                <Card>
+                  <View className="flex-row items-center justify-between">
+                    <Text
+                      style={{
+                        fontSize: 22,
+                        fontWeight: "600",
+                        color: "#FFFFFF",
+                      }}
+                    >
+                      {category}
+                    </Text>
+                    <Text style={{ fontSize: 18, color: "#FFFFFF" }}>
+                      {expandedCategory === category ? "▼" : "▶"}
+                    </Text>
+                  </View>
+                </Card>
+              </TouchableOpacity>
+
+              {expandedCategory === category && (
+                <View className="mt-2 ml-4">
+                  {Array.isArray(items)
+                    ? items.map((starter, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          onPress={() =>
+                            setExpandedStarter(
+                              expandedStarter === `${category}-${index}`
+                                ? null
+                                : `${category}-${index}`
+                            )
+                          }
+                        >
+                          <Card className="mb-2">
+                            <Text
+                              style={{
+                                fontSize: 16,
+                                fontWeight: "500",
+                                color: "#FFFFFF",
+                                marginBottom: 8,
+                                lineHeight: 24,
+                              }}
+                            >
+                              "{starter.opener}"
+                            </Text>
+                            <Text style={{ fontSize: 13, color: "#A0A0A0" }}>
+                              Tap to see details →
+                            </Text>
+                            {expandedStarter === `${category}-${index}` && (
+                              <View className="mt-4">
+                                <Text className="text-sm font-semibold text-text mb-1">
+                                  Tone: {starter.tone}
                                 </Text>
-                              ))}
-                              <Text className="text-sm font-semibold text-text mb-1 mt-2">
-                                Don'ts:
-                              </Text>
-                              {starter.donts.map((dont, i) => (
-                                <Text
-                                  key={i}
-                                  className="text-sm text-textSecondary ml-2"
-                                >
-                                  • {dont}
+                                <Text className="text-sm font-semibold text-text mb-1 mt-2">
+                                  Do's:
                                 </Text>
-                              ))}
-                            </View>
-                          )}
-                        </Card>
-                      </TouchableOpacity>
-                    ))
-                  : Object.entries(items).map(([env, envStarters]) => (
-                      <View key={env} className="mb-4">
-                        <Text className="text-lg font-semibold text-text mb-2">
-                          {env}
-                        </Text>
-                        {envStarters.map((starter, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() =>
-                              setExpandedStarter(
-                                expandedStarter ===
-                                  `${category}-${env}-${index}`
-                                  ? null
-                                  : `${category}-${env}-${index}`
-                              )
-                            }
-                          >
-                            <Card className="mb-2">
-                              <Text className="text-base font-medium text-text mb-1">
-                                "{starter.opener}"
-                              </Text>
-                              <Text className="text-sm text-textSecondary">
-                                Tap to see details →
-                              </Text>
-                              {expandedStarter ===
-                                `${category}-${env}-${index}` && (
-                                <View className="mt-4">
-                                  <Text className="text-sm font-semibold text-text mb-1">
-                                    Tone: {starter.tone}
+                                {starter.dos.map((doItem, i) => (
+                                  <Text
+                                    key={i}
+                                    className="text-sm text-textSecondary ml-2"
+                                  >
+                                    • {doItem}
                                   </Text>
-                                  <Text className="text-sm font-semibold text-text mb-1 mt-2">
-                                    Do's:
+                                ))}
+                                <Text className="text-sm font-semibold text-text mb-1 mt-2">
+                                  Don'ts:
+                                </Text>
+                                {starter.donts.map((dont, i) => (
+                                  <Text
+                                    key={i}
+                                    className="text-sm text-textSecondary ml-2"
+                                  >
+                                    • {dont}
                                   </Text>
-                                  {starter.dos.map((doItem, i) => (
-                                    <Text
-                                      key={i}
-                                      className="text-sm text-textSecondary ml-2"
-                                    >
-                                      • {doItem}
+                                ))}
+                              </View>
+                            )}
+                          </Card>
+                        </TouchableOpacity>
+                      ))
+                    : Object.entries(items).map(([env, envStarters]) => (
+                        <View key={env} className="mb-4">
+                          <Text className="text-lg font-semibold text-text mb-2">
+                            {env}
+                          </Text>
+                          {envStarters.map((starter, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() =>
+                                setExpandedStarter(
+                                  expandedStarter ===
+                                    `${category}-${env}-${index}`
+                                    ? null
+                                    : `${category}-${env}-${index}`
+                                )
+                              }
+                            >
+                              <Card className="mb-2">
+                                <Text
+                                  className="text-base font-medium text-text mb-1"
+                                  style={{ lineHeight: 24 }}
+                                >
+                                  "{starter.opener}"
+                                </Text>
+                                <Text className="text-sm text-textSecondary">
+                                  Tap to see details →
+                                </Text>
+                                {expandedStarter ===
+                                  `${category}-${env}-${index}` && (
+                                  <View className="mt-4">
+                                    <Text className="text-sm font-semibold text-text mb-1">
+                                      Tone: {starter.tone}
                                     </Text>
-                                  ))}
-                                  <Text className="text-sm font-semibold text-text mb-1 mt-2">
-                                    Don'ts:
-                                  </Text>
-                                  {starter.donts.map((dont, i) => (
-                                    <Text
-                                      key={i}
-                                      className="text-sm text-textSecondary ml-2"
-                                    >
-                                      • {dont}
+                                    <Text className="text-sm font-semibold text-text mb-1 mt-2">
+                                      Do's:
                                     </Text>
-                                  ))}
-                                </View>
-                              )}
-                            </Card>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    ))}
-              </View>
-            )}
-          </View>
-        ))}
+                                    {starter.dos.map((doItem, i) => (
+                                      <Text
+                                        key={i}
+                                        className="text-sm text-textSecondary ml-2"
+                                      >
+                                        • {doItem}
+                                      </Text>
+                                    ))}
+                                    <Text className="text-sm font-semibold text-text mb-1 mt-2">
+                                      Don'ts:
+                                    </Text>
+                                    {starter.donts.map((dont, i) => (
+                                      <Text
+                                        key={i}
+                                        className="text-sm text-textSecondary ml-2"
+                                      >
+                                        • {dont}
+                                      </Text>
+                                    ))}
+                                  </View>
+                                )}
+                              </Card>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      ))}
+                </View>
+              )}
+            </View>
+          ))}
         </View>
       </ScrollView>
       {/* Bottom navigation bar */}
-      <BottomNavBar navigation={navigation} currentRoute="ConversationStarters" />
+      <BottomNavBar
+        navigation={navigation}
+        currentRoute="ConversationStarters"
+      />
     </SafeAreaView>
   );
 }

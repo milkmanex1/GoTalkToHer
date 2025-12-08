@@ -129,7 +129,7 @@ export default function PostActionReviewScreen({ navigation }) {
 
   if (submitted && aiFeedback) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={['top']}>
         <ScrollView 
           className="flex-1 bg-background"
           contentContainerStyle={{ paddingBottom: 20 }}
@@ -154,7 +154,7 @@ export default function PostActionReviewScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={['top']}>
       <ScrollView 
         className="flex-1 bg-background"
         contentContainerStyle={{ paddingBottom: 20 }}
