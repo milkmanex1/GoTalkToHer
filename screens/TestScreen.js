@@ -1,12 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TestScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>App is working!</Text>
-      <Text style={styles.subtext}>If you see this, rendering works</Text>
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <View style={styles.container}>
+        <Text style={styles.text}>App is working!</Text>
+        <Text style={styles.subtext}>If you see this, rendering works</Text>
+      </View>
+    </SafeAreaView>
   );
 }
 

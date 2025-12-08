@@ -8,8 +8,11 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../components/Button';
 import ChatMessage from '../components/ChatMessage';
+import BottomNavBar from '../components/BottomNavBar';
 import { supabase } from '../lib/supabase';
 import { generatePersonalizedCoaching } from '../lib/aiService';
 import { handleError } from '../lib/errorHandler';
@@ -21,6 +24,7 @@ export default function WingmanChatScreen({ navigation }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const flatListRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadUserProfileAndHistory();
@@ -160,18 +164,21 @@ export default function WingmanChatScreen({ navigation }) {
 
   if (loadingHistory) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <Text style={{ color: '#A0A0A0' }}>Loading chat...</Text>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+        <View className="flex-1 items-center justify-center bg-background">
+          <Text style={{ color: '#A0A0A0' }}>Loading chat...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background"
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={90}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <KeyboardAvoidingView
+        className="flex-1 bg-background"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={90}
+      >
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -184,7 +191,7 @@ export default function WingmanChatScreen({ navigation }) {
           flatListRef.current?.scrollToEnd({ animated: true })
         }
       />
-      <View className="border-t border-border bg-surface px-4 py-3">
+      <View style={{ paddingBottom: insets.bottom }} className="border-t border-border bg-surface px-4 py-3">
         <View className="flex-row items-center">
           <TextInput
             className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 mr-2"
@@ -205,7 +212,10 @@ export default function WingmanChatScreen({ navigation }) {
           />
         </View>
       </View>
-    </KeyboardAvoidingView>
+      {/* Bottom navigation bar */}
+      <BottomNavBar navigation={navigation} currentRoute="WingmanChat" />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

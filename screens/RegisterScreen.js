@@ -7,6 +7,8 @@ import {
   Alert,
   TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
 import { handleError } from "../lib/errorHandler";
@@ -16,6 +18,7 @@ export default function RegisterScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const handleRegister = async () => {
     if (!email.trim()) {
@@ -90,8 +93,12 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <ScrollView 
+        className="flex-1 bg-background"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
+        <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
         {/* Large Title */}
         <Text
           style={{
@@ -218,8 +225,9 @@ export default function RegisterScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 

@@ -1,35 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../components/Button";
+import BottomNavBar from "../components/BottomNavBar";
 import { supabase } from "../lib/supabase";
 import { TAGLINE_COMBOS } from "../constants/taglines";
-
-const SECONDARY_FEATURES = [
-  {
-    id: "starters",
-    route: "ConversationStarters",
-    icon: "💬",
-    label: "Starters",
-  },
-  {
-    id: "motivation",
-    route: "MotivationBoost",
-    icon: "💪",
-    label: "Motivation",
-  },
-  {
-    id: "review",
-    route: "PostActionReview",
-    icon: "📝",
-    label: "Review",
-  },
-  {
-    id: "chat",
-    route: "WingmanChat",
-    icon: "🤖",
-    label: "Wingman",
-  },
-];
 
 export default function HomeScreen({ navigation }) {
   const [userProfile, setUserProfile] = useState(null);
@@ -46,7 +21,10 @@ export default function HomeScreen({ navigation }) {
   const loadUserProfile = async () => {
     try {
       // Get the authenticated user
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
       if (authError || !user) {
         // No authenticated user, redirect to login
         navigation.replace("Login");
@@ -89,14 +67,22 @@ export default function HomeScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <Text className="text-textSecondary">Loading...</Text>
-      </View>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: "#000000" }}
+        edges={["top"]}
+      >
+        <View className="flex-1 items-center justify-center bg-background">
+          <Text className="text-textSecondary">Loading...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#000000" }}
+      edges={["top"]}
+    >
       {/* Main centered hero block - vertically centered */}
       <View className="flex-1 items-center justify-center px-6">
         {/* Large heart chat image */}
@@ -113,7 +99,7 @@ export default function HomeScreen({ navigation }) {
             style={{
               fontSize: 36,
               fontWeight: "bold",
-              color: "#FF4FA3",
+              color: "#f7f7f5",
               textAlign: "center",
               lineHeight: 46.8,
             }}
@@ -144,23 +130,8 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Secondary features as bottom icon bar */}
-      <View className="pb-5 px-6">
-        <View className="flex-row justify-around items-center border-t border-border pt-5">
-          {SECONDARY_FEATURES.map((feature) => (
-            <TouchableOpacity
-              key={feature.id}
-              onPress={() => navigation.navigate(feature.route)}
-              className="items-center flex-1"
-            >
-              <Text className="text-2xl mb-1">{feature.icon}</Text>
-              <Text style={{ fontSize: 12, color: "#A0A0A0" }}>
-                {feature.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-    </View>
+      {/* Bottom navigation bar */}
+      <BottomNavBar navigation={navigation} currentRoute="Home" />
+    </SafeAreaView>
   );
 }

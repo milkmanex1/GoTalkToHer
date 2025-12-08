@@ -6,11 +6,14 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
 
 export default function ProfileScreen({ navigation }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadUserProfile();
@@ -70,24 +73,32 @@ export default function ProfileScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" color="#FF4FA3" />
-        <Text className="text-textSecondary mt-4">Loading profile...</Text>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+        <View className="flex-1 items-center justify-center bg-background">
+          <ActivityIndicator size="large" color="#FF4FA3" />
+          <Text className="text-textSecondary mt-4">Loading profile...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (!userProfile) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <Text className="text-textSecondary">Profile not found</Text>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+        <View className="flex-1 items-center justify-center bg-background">
+          <Text className="text-textSecondary">Profile not found</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <ScrollView 
+        className="flex-1 bg-background"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
+        <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
         {/* Header */}
         <Text
           style={{
@@ -346,7 +357,8 @@ export default function ProfileScreen({ navigation }) {
             Sign Out
           </Text>
         </TouchableOpacity>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

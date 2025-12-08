@@ -7,8 +7,11 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import BottomNavBar from '../components/BottomNavBar';
 import { supabase } from '../lib/supabase';
 import { processPostActionReview } from '../lib/aiService';
 import { handleError } from '../lib/errorHandler';
@@ -28,6 +31,7 @@ export default function PostActionReviewScreen({ navigation }) {
   const [aiFeedback, setAiFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const handleSubmit = async () => {
     if (!selectedOutcome) {
@@ -125,8 +129,12 @@ export default function PostActionReviewScreen({ navigation }) {
 
   if (submitted && aiFeedback) {
     return (
-      <ScrollView className="flex-1 bg-background">
-        <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+        <ScrollView 
+          className="flex-1 bg-background"
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
+          <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
           <Card className="mb-6" style={{ backgroundColor: 'rgba(255, 79, 163, 0.1)', borderColor: '#FF4FA3' }}>
             <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#FF4FA3', marginBottom: 16, textAlign: 'center', lineHeight: 33.8 }}>
               Great job taking action! 🎉
@@ -137,14 +145,21 @@ export default function PostActionReviewScreen({ navigation }) {
             <Text style={{ fontSize: 16, color: '#FFFFFF', lineHeight: 22.4 }}>{aiFeedback}</Text>
           </Card>
           <Button title="Submit Another Review" onPress={handleReset} className="w-full" />
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+        {/* Bottom navigation bar */}
+        <BottomNavBar navigation={navigation} currentRoute="PostActionReview" />
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <ScrollView 
+        className="flex-1 bg-background"
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
         <Text style={{ fontSize: 22, fontWeight: '600', color: '#FFFFFF', marginBottom: 24 }}>
           How did it go?
         </Text>
@@ -219,8 +234,11 @@ export default function PostActionReviewScreen({ navigation }) {
           loading={loading}
           className="w-full"
         />
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+      {/* Bottom navigation bar */}
+      <BottomNavBar navigation={navigation} currentRoute="PostActionReview" />
+    </SafeAreaView>
   );
 }
 

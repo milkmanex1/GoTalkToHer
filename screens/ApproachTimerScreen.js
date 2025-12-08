@@ -8,6 +8,8 @@ import {
   Dimensions,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
@@ -62,6 +64,7 @@ export default function ApproachTimerScreen({ navigation }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const bottomTextOpacity = useRef(new Animated.Value(0)).current;
   const flashOpacity = useRef(new Animated.Value(0)).current;
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     return () => {
@@ -181,190 +184,205 @@ export default function ApproachTimerScreen({ navigation }) {
   };
 
   return (
-    <LinearGradient
-      colors={["#181C24", "#101014", "#000000"]}
-      locations={[0, 0.5, 1]}
-      style={styles.container}
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#000000" }}
+      edges={["top"]}
     >
-      {/* Dark vignette overlay - subtle gradient darkening at edges */}
-      <View style={styles.vignette}>
-        {/* Top edge */}
-        <LinearGradient
-          colors={["rgba(0,0,0,0.4)", "transparent"]}
-          style={styles.vignetteTop}
-        />
-        {/* Bottom edge */}
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.5)"]}
-          style={styles.vignetteBottom}
-        />
-        {/* Left edge */}
-        <LinearGradient
-          colors={["rgba(0,0,0,0.3)", "transparent"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.vignetteLeft}
-        />
-        {/* Right edge */}
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.3)"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.vignetteRight}
-        />
-      </View>
-
-      {!isActive && !timerComplete && (
-        <View className="flex-1 items-center justify-center px-6">
-          <View className="mb-12 items-center justify-center">
-            <Image
-              source={require("../assets/images/stopwatch.png")}
-              style={{
-                width: 200,
-                height: 200,
-                resizeMode: "contain",
-              }}
-            />
-          </View>
-
-          <View className="mb-12">
-            <Text
-              style={{
-                fontSize: 22,
-                fontWeight: "600",
-                color: "#FFFFFF",
-                marginBottom: 12,
-                textAlign: "center",
-              }}
-            >
-              Ready to take action?
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                color: "#D0D0D0",
-                textAlign: "center",
-                paddingHorizontal: 16,
-                lineHeight: 22.4,
-                marginBottom: 12,
-              }}
-            >
-              You have {DURATION} seconds. When it hits zero, you approach her.
-            </Text>
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#A0A0A0",
-                textAlign: "center",
-                paddingHorizontal: 16,
-                lineHeight: 20,
-                fontStyle: "italic",
-              }}
-            >
-              A proven cognitive technique that overrides fear and helps you act
-              instantly.
-            </Text>
-          </View>
-
-          <View className="w-full px-6">
-            <Button title="Let's Go" onPress={handleStart} className="w-full" />
-          </View>
-        </View>
-      )}
-
-      {isActive && (
-        <View className="flex-1">
-          {/* Flash overlay for last 3 seconds - covers entire screen */}
-          <Animated.View
-            style={[styles.flashOverlay, { opacity: flashOpacity }]}
-            pointerEvents="none"
+      <LinearGradient
+        colors={["#181C24", "#101014", "#000000"]}
+        locations={[0, 0.5, 1]}
+        style={styles.container}
+      >
+        {/* Dark vignette overlay - subtle gradient darkening at edges */}
+        <View style={styles.vignette}>
+          {/* Top edge */}
+          <LinearGradient
+            colors={["rgba(0,0,0,0.4)", "transparent"]}
+            style={styles.vignetteTop}
           />
-
-          {/* Large circular countdown centered */}
-          <View className="flex-1 items-center justify-center px-6">
-            <Timer
-              duration={DURATION}
-              onComplete={handleComplete}
-              isActive={isActive}
-              onTimeUpdate={handleTimerUpdate}
-            />
-
-            {/* Motivation text below with fade-in */}
-            <Animated.View
-              style={[
-                styles.bottomTextContainer,
-                { opacity: bottomTextOpacity },
-              ]}
-            >
-              <Text style={styles.bottomText}>{countdownMessage}</Text>
-            </Animated.View>
-          </View>
-
-          {/* Cancel button at bottom - ghost style */}
-          <View style={styles.cancelButtonContainer}>
-            <TouchableOpacity
-              onPress={handleReset}
-              style={styles.cancelButton}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.cancelButtonText}>I need a moment</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Bottom edge */}
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.5)"]}
+            style={styles.vignetteBottom}
+          />
+          {/* Left edge */}
+          <LinearGradient
+            colors={["rgba(0,0,0,0.3)", "transparent"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.vignetteLeft}
+          />
+          {/* Right edge */}
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.3)"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.vignetteRight}
+          />
         </View>
-      )}
 
-      {timerComplete && (
-        <Animated.View
-          style={[styles.completeContainer, { opacity: fadeAnim }]}
-        >
+        {!isActive && !timerComplete && (
           <View className="flex-1 items-center justify-center px-6">
-            <View className="mb-12 items-center">
+            <View className="mb-12 items-center justify-center">
               <Image
-                source={require("../assets/images/pink_lightning.png")}
+                source={require("../assets/images/stopwatch.png")}
                 style={{
-                  width: 180,
-                  height: 180,
+                  width: 200,
+                  height: 200,
                   resizeMode: "contain",
-                  marginBottom: 32,
                 }}
               />
-              {/* Large bold pink headline */}
+            </View>
+
+            <View className="mb-12">
               <Text
                 style={{
-                  fontSize: 36,
-                  fontWeight: "bold",
-                  color: "#FF4FA3",
-                  textAlign: "center",
-                  marginBottom: 16,
-                  lineHeight: 46.8,
-                }}
-              >
-                Go now.
-              </Text>
-              {/* Subtext in soft white */}
-              <Text
-                style={{
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: "600",
                   color: "#FFFFFF",
+                  marginBottom: 12,
                   textAlign: "center",
-                  lineHeight: 28,
                 }}
               >
-                {motivationalMessage}
+                Ready to take action?
+              </Text>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: "#D0D0D0",
+                  textAlign: "center",
+                  paddingHorizontal: 16,
+                  lineHeight: 22.4,
+                  marginBottom: 12,
+                }}
+              >
+                You have {DURATION} seconds. When it hits zero, you approach
+                her.
+              </Text>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: "#A0A0A0",
+                  textAlign: "center",
+                  paddingHorizontal: 16,
+                  lineHeight: 20,
+                  fontStyle: "italic",
+                }}
+              >
+                A proven cognitive technique that overrides fear and helps you
+                act instantly.
               </Text>
             </View>
+
             <View className="w-full px-6">
               <Button
-                title="Try again"
-                onPress={handleReset}
+                title="Start Now"
+                onPress={handleStart}
                 className="w-full"
               />
             </View>
           </View>
-        </Animated.View>
-      )}
-    </LinearGradient>
+        )}
+
+        {isActive && (
+          <View className="flex-1">
+            {/* Flash overlay for last 3 seconds - covers entire screen */}
+            <Animated.View
+              style={[styles.flashOverlay, { opacity: flashOpacity }]}
+              pointerEvents="none"
+            />
+
+            {/* Large circular countdown centered */}
+            <View className="flex-1 items-center justify-center px-6">
+              <Timer
+                duration={DURATION}
+                onComplete={handleComplete}
+                isActive={isActive}
+                onTimeUpdate={handleTimerUpdate}
+              />
+
+              {/* Motivation text below with fade-in */}
+              <Animated.View
+                style={[
+                  styles.bottomTextContainer,
+                  { opacity: bottomTextOpacity },
+                ]}
+              >
+                <Text style={styles.bottomText}>{countdownMessage}</Text>
+              </Animated.View>
+            </View>
+
+            {/* Cancel button at bottom - ghost style */}
+            <View
+              style={[
+                styles.cancelButtonContainer,
+                { paddingBottom: insets.bottom + 12 },
+              ]}
+            >
+              <TouchableOpacity
+                onPress={handleReset}
+                style={styles.cancelButton}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.cancelButtonText}>I need a moment</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {timerComplete && (
+          <Animated.View
+            style={[styles.completeContainer, { opacity: fadeAnim }]}
+          >
+            <View className="flex-1 items-center justify-center px-6">
+              <View className="mb-12 items-center">
+                <Image
+                  source={require("../assets/images/pink_lightning.png")}
+                  style={{
+                    width: 180,
+                    height: 180,
+                    resizeMode: "contain",
+                    marginBottom: 32,
+                  }}
+                />
+                {/* Large bold pink headline */}
+                <Text
+                  style={{
+                    fontSize: 36,
+                    fontWeight: "bold",
+                    color: "#FF4FA3",
+                    textAlign: "center",
+                    marginBottom: 16,
+                    lineHeight: 46.8,
+                  }}
+                >
+                  Go now.
+                </Text>
+                {/* Subtext in soft white */}
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "600",
+                    color: "#FFFFFF",
+                    textAlign: "center",
+                    lineHeight: 28,
+                  }}
+                >
+                  {motivationalMessage}
+                </Text>
+              </View>
+              <View className="w-full px-6">
+                <Button
+                  title="Try again"
+                  onPress={handleReset}
+                  className="w-full"
+                />
+              </View>
+            </View>
+          </Animated.View>
+        )}
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 
@@ -416,7 +434,6 @@ const styles = StyleSheet.create({
     lineHeight: 22.4,
   },
   cancelButtonContainer: {
-    paddingBottom: 40,
     paddingHorizontal: "10%",
     alignItems: "center",
   },

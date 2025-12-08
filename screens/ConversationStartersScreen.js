@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import BottomNavBar from "../components/BottomNavBar";
 import { supabase } from "../lib/supabase";
 import { generateConversationStarter } from "../lib/aiService";
 import { handleError } from "../lib/errorHandler";
@@ -144,8 +146,12 @@ export default function ConversationStartersScreen({ navigation }) {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <ScrollView 
+        className="flex-1 bg-background"
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
         <Button
           title={loading ? "Generating..." : "Generate Personalized Opener"}
           onPress={handleGeneratePersonalized}
@@ -301,7 +307,10 @@ export default function ConversationStartersScreen({ navigation }) {
             )}
           </View>
         ))}
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+      {/* Bottom navigation bar */}
+      <BottomNavBar navigation={navigation} currentRoute="ConversationStarters" />
+    </SafeAreaView>
   );
 }

@@ -1,5 +1,8 @@
 import React, { useEffect } from "react";
+import { Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import * as NavigationBar from "expo-navigation-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import {
   registerForPushNotificationsAsync,
   scheduleDailyMotivationalNotification,
@@ -10,6 +13,11 @@ import "./global.css";
 
 export default function App() {
   useEffect(() => {
+    // Set Android navigation bar color to black
+    if (Platform.OS === "android") {
+      NavigationBar.setBackgroundColorAsync("#000000");
+    }
+
     // Register for push notifications (fail silently if not available)
     registerForPushNotificationsAsync()
       .then(() => {
@@ -25,9 +33,11 @@ export default function App() {
   }, []);
 
   return (
-    <ErrorBoundary>
-      <StatusBar style="light" />
-      <AppNavigator />
-    </ErrorBoundary>
+    <SafeAreaProvider>
+      <ErrorBoundary>
+        <StatusBar style="light" />
+        <AppNavigator />
+      </ErrorBoundary>
+    </SafeAreaProvider>
   );
 }

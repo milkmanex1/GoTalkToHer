@@ -7,6 +7,8 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
@@ -29,6 +31,7 @@ export default function OnboardingScreen({ navigation }) {
   const [confidenceLevel, setConfidenceLevel] = useState(5);
   const [biggestChallenge, setBiggestChallenge] = useState(CHALLENGES[0]);
   const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -87,8 +90,12 @@ export default function OnboardingScreen({ navigation }) {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top']}>
+      <ScrollView 
+        className="flex-1 bg-background"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
+        <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
         {/* Large Title: 26-28 bold */}
         <Text
           style={{
@@ -229,7 +236,8 @@ export default function OnboardingScreen({ navigation }) {
           loading={loading}
           className="w-full"
         />
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
