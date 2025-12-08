@@ -13,7 +13,6 @@ import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
 import Timer from "../components/Timer";
 import Button from "../components/Button";
-import { Storage } from "../lib/storage";
 import { supabase } from "../lib/supabase";
 
 const { width, height } = Dimensions.get("window");
@@ -42,7 +41,7 @@ const TIMER_COUNTDOWN_MESSAGES = [
   "Your fear is not a problem. It's part of the process.",
   "This tension means you're growing.",
   "It's okay to feel this way. Really.",
-  "Breathe… you're doing better than you think.", 
+  "Breathe… you're doing better than you think.",
   "You're not alone. So many feel exactly like this.",
   "Give yourself a little grace. This is hard.",
   "You're braver than you think.",

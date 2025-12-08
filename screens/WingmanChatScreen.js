@@ -11,7 +11,6 @@ import {
 import Button from '../components/Button';
 import ChatMessage from '../components/ChatMessage';
 import { supabase } from '../lib/supabase';
-import { Storage } from '../lib/storage';
 import { generatePersonalizedCoaching } from '../lib/aiService';
 import { handleError } from '../lib/errorHandler';
 

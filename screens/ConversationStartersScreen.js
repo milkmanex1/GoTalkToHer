@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
-import { Storage } from "../lib/storage";
 import { generateConversationStarter } from "../lib/aiService";
 import { handleError } from "../lib/errorHandler";
 
