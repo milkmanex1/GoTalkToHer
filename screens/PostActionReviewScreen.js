@@ -17,6 +17,7 @@ import BottomNavBar from "../components/BottomNavBar";
 import { supabase } from "../lib/supabase";
 import { processPostActionReview } from "../lib/aiService";
 import { handleError } from "../lib/errorHandler";
+import { updateProgress } from "../lib/progress";
 
 const OUTCOMES = [
   { id: "did_not_approach", label: "Did not approach" },
@@ -55,13 +56,13 @@ export default function PostActionReviewScreen({ navigation }) {
         return;
       }
 
-      const authUserId = auth.user.id;
+      const userId = auth.user.id;
 
-      // Load profile by auth_user_id
+      // Load profile by id
       const { data: profile } = await supabase
         .from("user_profile")
         .select("*")
-        .eq("auth_user_id", authUserId)
+        .eq("id", userId)
         .single();
 
       if (!profile) {
@@ -87,10 +88,10 @@ export default function PostActionReviewScreen({ navigation }) {
 
       setAiFeedback(feedback);
 
-      // Save to database using auth_user_id
+      // Save to database using user_id
       const { error } = await supabase.from("approach_events").insert([
         {
-          user_id: authUserId,
+          user_id: userId,
           outcome: selectedOutcome,
           notes: JSON.stringify(notes),
           ai_feedback: feedback,
@@ -99,21 +100,10 @@ export default function PostActionReviewScreen({ navigation }) {
 
       if (error) throw error;
 
-      // Update user profile stats
-      if (selectedOutcome === "got_number" || selectedOutcome === "friendly") {
-        await supabase
-          .from("user_profile")
-          .update({
-            past_successes: (profile.past_successes || 0) + 1,
-          })
-          .eq("auth_user_id", authUserId);
-      } else if (selectedOutcome === "not_interested") {
-        await supabase
-          .from("user_profile")
-          .update({
-            past_rejections: (profile.past_rejections || 0) + 1,
-          })
-          .eq("auth_user_id", authUserId);
+      // Update user profile stats and progress
+      // Only count as approach if they actually approached (not "did_not_approach")
+      if (selectedOutcome !== "did_not_approach") {
+        await updateProgress(userId, "approach", selectedOutcome);
       }
 
       setSubmitted(true);

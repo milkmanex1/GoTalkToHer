@@ -9,16 +9,28 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
+import { Storage } from "../lib/storage";
 import BottomNavBar from "../components/BottomNavBar";
+import { getActivityHeatmap } from "../lib/progress";
 
 export default function ProfileScreen({ navigation }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activityData, setActivityData] = useState([]);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    loadUserProfile();
-  }, []);
+    const unsubscribe = navigation.addListener("focus", () => {
+      loadUserProfile();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  useEffect(() => {
+    if (userProfile) {
+      loadActivityData();
+    }
+  }, [userProfile]);
 
   const loadUserProfile = async () => {
     try {
@@ -32,13 +44,13 @@ export default function ProfileScreen({ navigation }) {
         return;
       }
 
-      const authUserId = user.id;
+      const userId = user.id;
 
-      // Load profile by auth_user_id
+      // Load profile by id
       const { data, error } = await supabase
         .from("user_profile")
         .select("*")
-        .eq("auth_user_id", authUserId)
+        .eq("id", userId)
         .single();
 
       if (error) {
@@ -63,10 +75,28 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
+  const loadActivityData = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const heatmapData = await getActivityHeatmap(user.id);
+        setActivityData(heatmapData);
+      }
+    } catch (error) {
+      console.error("Error loading activity data:", error);
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
-      navigation.replace("Login");
+      await Storage.removeUserId();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -344,6 +374,231 @@ export default function ProfileScreen({ navigation }) {
                   </Text>
                 </View>
                 <Text style={{ fontSize: 48 }}>💪</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Your Progress Section */}
+        <View style={{ marginTop: 8, marginBottom: 24 }}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "600",
+              color: "#FFFFFF",
+              marginBottom: 16,
+            }}
+          >
+            Your Progress
+          </Text>
+
+          {/* Total Approaches */}
+          <View style={{ marginBottom: 12 }}>
+            <View className="bg-surface border border-border rounded-xl px-4 py-4">
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: "#A0A0A0",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Total Approaches
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 32,
+                      fontWeight: "bold",
+                      color: "#FF4FA3",
+                    }}
+                  >
+                    {userProfile.total_approaches || 0}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Timer Runs */}
+          <View style={{ marginBottom: 12 }}>
+            <View className="bg-surface border border-border rounded-xl px-4 py-4">
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: "#A0A0A0",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Timer Runs
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 32,
+                      fontWeight: "bold",
+                      color: "#FF4FA3",
+                    }}
+                  >
+                    {userProfile.timer_runs || 0}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Success Rate */}
+          <View style={{ marginBottom: 12 }}>
+            <View className="bg-surface border border-border rounded-xl px-4 py-4">
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: "#A0A0A0",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Success Rate
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 32,
+                      fontWeight: "bold",
+                      color: "#4ADE80",
+                    }}
+                  >
+                    {userProfile.success_rate
+                      ? `${userProfile.success_rate.toFixed(1)}%`
+                      : "0%"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Current Streak */}
+          <View style={{ marginBottom: 12 }}>
+            <View className="bg-surface border border-border rounded-xl px-4 py-4">
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: "#A0A0A0",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Current Streak 🔥
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 32,
+                      fontWeight: "bold",
+                      color: "#FF4FA3",
+                    }}
+                  >
+                    {userProfile.current_streak || 0}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Longest Streak */}
+          <View style={{ marginBottom: 12 }}>
+            <View className="bg-surface border border-border rounded-xl px-4 py-4">
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: "#A0A0A0",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Longest Streak 🏆
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 32,
+                      fontWeight: "bold",
+                      color: "#FFD700",
+                    }}
+                  >
+                    {userProfile.longest_streak || 0}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* 7-Day Activity Heatmap */}
+          <View style={{ marginTop: 16 }}>
+            <Text
+              style={{
+                fontSize: 16,
+                color: "#A0A0A0",
+                marginBottom: 12,
+              }}
+            >
+              Activity Heatmap (Last 7 Days)
+            </Text>
+            <View className="bg-surface border border-border rounded-xl px-4 py-4">
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "flex-end",
+                  minHeight: 120,
+                }}
+              >
+                {activityData.map((day, index) => {
+                  const maxCount = Math.max(
+                    ...activityData.map((d) => d.count),
+                    1
+                  );
+                  const height = maxCount > 0 ? (day.count / maxCount) * 80 : 0;
+                  return (
+                    <View
+                      key={index}
+                      style={{
+                        flex: 1,
+                        alignItems: "center",
+                        marginHorizontal: 2,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: "100%",
+                          height: Math.max(height, 4),
+                          backgroundColor:
+                            day.count > 0 ? "#FF4FA3" : "rgba(160, 160, 160, 0.2)",
+                          borderRadius: 4,
+                          marginBottom: 8,
+                        }}
+                      />
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          color: "#A0A0A0",
+                          marginBottom: 4,
+                        }}
+                      >
+                        {day.count}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          color: "#A0A0A0",
+                        }}
+                      >
+                        {day.dayName}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
           </View>

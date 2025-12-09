@@ -49,13 +49,13 @@ export default function MotivationBoostScreen({ navigation }) {
         return;
       }
 
-      const authUserId = auth.user.id;
+      const userId = auth.user.id;
 
-      // Load profile by auth_user_id
+      // Load profile by id
       const { data: profile } = await supabase
         .from('user_profile')
         .select('*')
-        .eq('auth_user_id', authUserId)
+        .eq('id', userId)
         .single();
 
       if (!profile) {

@@ -2,9 +2,9 @@
 -- Run this SQL in your Supabase SQL Editor
 
 -- Create user_profile table
+-- Note: id must equal auth.users(id) - no default UUID generation
 CREATE TABLE IF NOT EXISTS user_profile (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  auth_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   age_range TEXT,
   confidence_level INTEGER CHECK (confidence_level >= 1 AND confidence_level <= 10),
@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS user_profile (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create index for auth_user_id lookup
-CREATE INDEX IF NOT EXISTS idx_user_profile_auth_user_id ON user_profile(auth_user_id);
+-- Create index for id lookup (id is already primary key, but explicit index helps)
+CREATE INDEX IF NOT EXISTS idx_user_profile_id ON user_profile(id);
 
 -- Create approach_events table
 -- Note: user_id now stores auth.users(id) instead of user_profile(id)

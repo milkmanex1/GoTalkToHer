@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
+import { Storage } from "../lib/storage";
 import { handleError } from "../lib/errorHandler";
 
 const CHALLENGES = [
@@ -33,7 +34,19 @@ export default function OnboardingScreen({ navigation }) {
   const [confidenceLevel, setConfidenceLevel] = useState(5);
   const [biggestChallenge, setBiggestChallenge] = useState(CHALLENGES[0]);
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const insets = useSafeAreaInsets();
+
+  // Auth guard: Ensure user is authenticated before showing onboarding
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        navigation.replace("Login");
+      } else {
+        setCheckingAuth(false);
+      }
+    });
+  }, [navigation]);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -43,11 +56,8 @@ export default function OnboardingScreen({ navigation }) {
 
     setLoading(true);
     try {
-      // Get authenticated user - must exist at this point (from RegisterScreen)
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
 
       if (authError || !user) {
         // No authenticated user, redirect to login
@@ -56,34 +66,40 @@ export default function OnboardingScreen({ navigation }) {
         return;
       }
 
-      const authUserId = user.id;
-
-      // Update existing profile (created in RegisterScreen)
-      const { error } = await supabase
-        .from("user_profile")
-        .update({
+      // Insert the profile using id: user.id
+      const { error } = await supabase.from("user_profile").insert([
+        {
+          id: user.id,
           name: name.trim(),
           age_range: ageRange,
           confidence_level: confidenceLevel,
           biggest_challenge: biggestChallenge,
           fear_type: biggestChallenge,
-        })
-        .eq("auth_user_id", authUserId);
+          preferred_environments: [],
+          past_successes: 0,
+          past_rejections: 0,
+        },
+      ]);
 
       if (error) {
-        // If update fails, profile might not exist (shouldn't happen, but handle gracefully)
-        if (error.code === "PGRST116" || error.message?.includes("No rows")) {
-          Alert.alert(
-            "Error",
-            "Profile not found. Please register again or contact support."
-          );
-          navigation.replace("Register");
+        // If insert fails, check if profile already exists
+        if (error.code === "23505") {
+          // Unique constraint violation - profile already exists
+          Alert.alert("Error", "Profile already exists. Redirecting to home...");
+          navigation.replace("Home");
           return;
         }
         throw error;
       }
 
-      navigation.replace("Home");
+      // Store userId
+      await Storage.setUserId(user.id);
+
+      // Navigate to Home using navigation reset
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Home" }],
+      });
     } catch (error) {
       handleError(error, "Failed to save profile. Please try again.");
     } finally {
@@ -91,160 +107,175 @@ export default function OnboardingScreen({ navigation }) {
     }
   };
 
+  // Show loading while checking auth
+  if (checkingAuth) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+        <View className="flex-1 items-center justify-center bg-background">
+          <ActivityIndicator size="large" color="#FF4FA3" />
+          <Text className="text-textSecondary mt-4">Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={[]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-        <ScrollView 
+        <ScrollView
           className="flex-1 bg-background"
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 20 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: insets.bottom + 20,
+          }}
           keyboardShouldPersistTaps="handled"
         >
-        <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
-        {/* Large Title: 26-28 bold */}
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: "bold",
-            color: "#FFFFFF",
-            marginBottom: 16,
-            textAlign: "center",
-            lineHeight: 36.4,
-          }}
-        >
-          Welcome to Go Talk To Her
-        </Text>
-        {/* Body: 16-18 regular */}
-        <Text
-          style={{
-            fontSize: 16,
-            color: "#D0D0D0",
-            marginBottom: 48,
-            textAlign: "center",
-            lineHeight: 22.4,
-          }}
-        >
-          We're here to help you overcome approach anxiety and build confidence
-          in real-world interactions. Let's get started!
-        </Text>
-
-        {/* Component spacing: 20-28 */}
-        <View style={{ marginBottom: 24 }}>
-          {/* Medium Title: 20-22 semi-bold */}
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "600",
-              color: "#FFFFFF",
-              marginBottom: 12,
-            }}
-          >
-            Name / Nickname
-          </Text>
-          <TextInput
-            className="bg-surface border border-border rounded-xl px-4 py-3"
-            style={{ fontSize: 16, color: "#FFFFFF" }}
-            placeholder="Enter your name"
-            placeholderTextColor="#A0A0A0"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-          />
-        </View>
-
-        <View style={{ marginBottom: 24 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "600",
-              color: "#FFFFFF",
-              marginBottom: 12,
-            }}
-          >
-            Age Range
-          </Text>
-          <View className="bg-surface border border-border rounded-xl overflow-hidden">
-            <Picker
-              selectedValue={ageRange}
-              onValueChange={setAgeRange}
-              style={{ color: "#FFFFFF" }}
+          <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
+            {/* Large Title: 26-28 bold */}
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: "bold",
+                color: "#FFFFFF",
+                marginBottom: 16,
+                textAlign: "center",
+                lineHeight: 36.4,
+              }}
             >
-              {AGE_RANGES.map((range) => (
-                <Picker.Item key={range} label={range} value={range} />
-              ))}
-            </Picker>
-          </View>
-        </View>
+              Welcome to Go Talk To Her
+            </Text>
+            {/* Body: 16-18 regular */}
+            <Text
+              style={{
+                fontSize: 16,
+                color: "#D0D0D0",
+                marginBottom: 48,
+                textAlign: "center",
+                lineHeight: 22.4,
+              }}
+            >
+              We're here to help you overcome approach anxiety and build
+              confidence in real-world interactions. Let's get started!
+            </Text>
 
-        <View style={{ marginBottom: 24 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "600",
-              color: "#FFFFFF",
-              marginBottom: 12,
-            }}
-          >
-            Confidence Level: {confidenceLevel}/10
-          </Text>
-          <View className="flex-row items-center justify-between">
-            <Text style={{ fontSize: 13, color: "#A0A0A0" }}>Low</Text>
-            <View className="flex-1 mx-4">
-              <View className="flex-row">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
-                  <View
-                    key={level}
-                    onTouchEnd={() => setConfidenceLevel(level)}
-                    className={`flex-1 h-10 mx-0.5 rounded-lg ${
-                      level <= confidenceLevel ? "bg-primary" : "bg-border"
-                    }`}
-                  />
-                ))}
+            {/* Component spacing: 20-28 */}
+            <View style={{ marginBottom: 24 }}>
+              {/* Medium Title: 20-22 semi-bold */}
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: "#FFFFFF",
+                  marginBottom: 12,
+                }}
+              >
+                Name / Nickname
+              </Text>
+              <TextInput
+                className="bg-surface border border-border rounded-xl px-4 py-3"
+                style={{ fontSize: 16, color: "#FFFFFF" }}
+                placeholder="Enter your name"
+                placeholderTextColor="#A0A0A0"
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+              />
+            </View>
+
+            <View style={{ marginBottom: 24 }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: "#FFFFFF",
+                  marginBottom: 12,
+                }}
+              >
+                Age Range
+              </Text>
+              <View className="bg-surface border border-border rounded-xl overflow-hidden">
+                <Picker
+                  selectedValue={ageRange}
+                  onValueChange={setAgeRange}
+                  style={{ color: "#FFFFFF" }}
+                >
+                  {AGE_RANGES.map((range) => (
+                    <Picker.Item key={range} label={range} value={range} />
+                  ))}
+                </Picker>
               </View>
             </View>
-            <Text style={{ fontSize: 13, color: "#A0A0A0" }}>High</Text>
-          </View>
-        </View>
 
-        <View style={{ marginBottom: 40 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "600",
-              color: "#FFFFFF",
-              marginBottom: 12,
-            }}
-          >
-            Biggest Challenge
-          </Text>
-          <View className="bg-surface border border-border rounded-xl overflow-hidden">
-            <Picker
-              selectedValue={biggestChallenge}
-              onValueChange={setBiggestChallenge}
-              style={{ color: "#FFFFFF" }}
-            >
-              {CHALLENGES.map((challenge) => (
-                <Picker.Item
-                  key={challenge}
-                  label={challenge}
-                  value={challenge}
-                />
-              ))}
-            </Picker>
-          </View>
-        </View>
+            <View style={{ marginBottom: 24 }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: "#FFFFFF",
+                  marginBottom: 12,
+                }}
+              >
+                Confidence Level: {confidenceLevel}/10
+              </Text>
+              <View className="flex-row items-center justify-between">
+                <Text style={{ fontSize: 13, color: "#A0A0A0" }}>Low</Text>
+                <View className="flex-1 mx-4">
+                  <View className="flex-row">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
+                      <View
+                        key={level}
+                        onTouchEnd={() => setConfidenceLevel(level)}
+                        className={`flex-1 h-10 mx-0.5 rounded-lg ${
+                          level <= confidenceLevel ? "bg-primary" : "bg-border"
+                        }`}
+                      />
+                    ))}
+                  </View>
+                </View>
+                <Text style={{ fontSize: 13, color: "#A0A0A0" }}>High</Text>
+              </View>
+            </View>
 
-        <Button
-          title={loading ? "Saving..." : "Get Started"}
-          onPress={handleSubmit}
-          disabled={loading}
-          loading={loading}
-          className="w-full"
-        />
-        </View>
+            <View style={{ marginBottom: 40 }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: "#FFFFFF",
+                  marginBottom: 12,
+                }}
+              >
+                Biggest Challenge
+              </Text>
+              <View className="bg-surface border border-border rounded-xl overflow-hidden">
+                <Picker
+                  selectedValue={biggestChallenge}
+                  onValueChange={setBiggestChallenge}
+                  style={{ color: "#FFFFFF" }}
+                >
+                  {CHALLENGES.map((challenge) => (
+                    <Picker.Item
+                      key={challenge}
+                      label={challenge}
+                      value={challenge}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+
+            <Button
+              title={loading ? "Saving..." : "Get Started"}
+              onPress={handleSubmit}
+              disabled={loading}
+              loading={loading}
+              className="w-full"
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

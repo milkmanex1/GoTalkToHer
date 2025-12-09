@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
   ActivityIndicator,
-  TouchableOpacity,
 } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import Svg, { Path, Circle } from "react-native-svg";
 import { supabase } from "../lib/supabase";
+import { Storage } from "../lib/storage";
 import LoginScreen from "../screens/LoginScreen";
-import RegisterScreen from "../screens/RegisterScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
 import HomeScreen from "../screens/HomeScreen";
 import ApproachTimerScreen from "../screens/ApproachTimerScreen";
@@ -23,13 +21,8 @@ import TestScreen from "../screens/TestScreen";
 
 const Stack = createStackNavigator();
 
-// User icon component
-const UserIcon = ({ color = "#FFFFFF", size = 24 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <Circle cx="12" cy="8" r="5" />
-    <Path d="M20 21a8 8 0 0 0-16 0" />
-  </Svg>
-);
+// Create navigation ref for global navigation access
+export const navigationRef = React.createRef();
 
 export default function AppNavigator() {
   const [initialRoute, setInitialRoute] = useState(null);
@@ -38,26 +31,60 @@ export default function AppNavigator() {
   useEffect(() => {
     checkAuthAndRoute();
 
-    // Listen for auth state changes
+    // Global auth listener - handles magic link callbacks and auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        // User is signed in, check if profile exists
+      // Only process if navigation is ready
+      if (!navigationRef.current?.isReady()) {
+        return;
+      }
+
+      if (session?.user) {
+        // Validate user exists
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+          // Invalid session, sign out and go to login
+          await supabase.auth.signOut();
+          await Storage.removeUserId();
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: "Login" }],
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Check if profile exists
         const { data: profile } = await supabase
           .from("user_profile")
           .select("*")
-          .eq("auth_user_id", session.user.id)
+          .eq("id", user.id)
           .single();
 
         if (profile) {
-          setInitialRoute("Home");
+          await Storage.setUserId(user.id);
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: "Home" }],
+          });
         } else {
-          setInitialRoute("Onboarding");
+          // If profile missing, treat session as invalid
+          await supabase.auth.signOut();
+          await Storage.removeUserId();
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: "Login" }],
+          });
         }
       } else {
         // User is signed out
-        setInitialRoute("Login");
+        await Storage.removeUserId();
+        navigationRef.current?.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        });
       }
       setLoading(false);
     });
@@ -67,45 +94,35 @@ export default function AppNavigator() {
     };
   }, []);
 
-  const checkAuthAndRoute = async () => {
-    try {
-      // Check if session exists
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+  async function checkAuthAndRoute() {
+    const { data: { session } } = await supabase.auth.getSession();
 
-      if (error || !session) {
-        // No session, go to login
-        setInitialRoute("Login");
-        setLoading(false);
-        return;
-      }
-
-      const authUserId = session.user.id;
-
-      // Check if profile exists
-      const { data: profile } = await supabase
-        .from("user_profile")
-        .select("*")
-        .eq("auth_user_id", authUserId)
-        .single();
-
-      if (profile) {
-        // Profile exists, go to home
-        setInitialRoute("Home");
-      } else {
-        // No profile, go to onboarding
-        setInitialRoute("Onboarding");
-      }
-    } catch (error) {
-      console.error("Error checking auth state:", error);
-      // On error, default to login
+    if (!session) {
       setInitialRoute("Login");
-    } finally {
       setLoading(false);
+      return;
     }
-  };
+
+    const supabaseUser = session.user;
+
+    const { data: profile } = await supabase
+      .from("user_profile")
+      .select("*")
+      .eq("id", supabaseUser.id)
+      .single();
+
+    if (!profile) {
+      // Stale or incomplete session → force logout
+      await supabase.auth.signOut();
+      await Storage.removeUserId();
+      setInitialRoute("Login");
+      setLoading(false);
+      return;
+    }
+
+    setInitialRoute("Home");
+    setLoading(false);
+  }
 
   if (loading || !initialRoute) {
     return (
@@ -124,7 +141,7 @@ export default function AppNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         initialRouteName={initialRoute}
         screenOptions={{
@@ -140,25 +157,25 @@ export default function AppNavigator() {
           },
         }}
       >
-        <Stack.Screen
-          name="Test"
-          component={TestScreen}
-          options={{ headerShown: false }}
-        />
+        {/* Auth Stack */}
         <Stack.Screen
           name="Login"
           component={LoginScreen}
           options={{ headerShown: false, keyboardHandlingEnabled: true }}
         />
-        <Stack.Screen
-          name="Register"
-          component={RegisterScreen}
-          options={{ headerShown: false, keyboardHandlingEnabled: true }}
-        />
+
+        {/* Onboarding Stack */}
         <Stack.Screen
           name="Onboarding"
           component={OnboardingScreen}
           options={{ headerShown: false, keyboardHandlingEnabled: true }}
+        />
+
+        {/* App Stack */}
+        <Stack.Screen
+          name="Test"
+          component={TestScreen}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Home"
@@ -192,7 +209,10 @@ export default function AppNavigator() {
         <Stack.Screen
           name="PostActionReview"
           component={PostActionReviewScreen}
-          options={{ title: "Post-Action Review", keyboardHandlingEnabled: true }}
+          options={{
+            title: "Post-Action Review",
+            keyboardHandlingEnabled: true,
+          }}
         />
         <Stack.Screen
           name="WingmanChat"

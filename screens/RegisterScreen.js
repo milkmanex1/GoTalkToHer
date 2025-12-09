@@ -61,7 +61,7 @@ export default function RegisterScreen({ navigation }) {
         .from("user_profile")
         .insert([
           {
-            auth_user_id: userId,
+            id: userId,
             name: "", // Will be filled in onboarding
             age_range: "23-27",
             confidence_level: 5,

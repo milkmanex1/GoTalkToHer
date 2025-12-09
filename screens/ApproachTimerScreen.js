@@ -16,6 +16,7 @@ import { Audio } from "expo-av";
 import Timer from "../components/Timer";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
+import { updateProgress } from "../lib/progress";
 
 const { width, height } = Dimensions.get("window");
 
@@ -154,7 +155,7 @@ export default function ApproachTimerScreen({ navigation }) {
     //   }
     // }
 
-    // Save timer event to Supabase
+    // Save timer event to Supabase and update progress
     try {
       const { data: auth } = await supabase.auth.getUser();
       if (auth?.user) {
@@ -167,6 +168,9 @@ export default function ApproachTimerScreen({ navigation }) {
             outcome: "timer_completed",
           },
         ]);
+
+        // Update progress stats
+        await updateProgress(authUserId, "timer", "timer_completed");
       }
     } catch (error) {
       console.error("Error saving timer event:", error);

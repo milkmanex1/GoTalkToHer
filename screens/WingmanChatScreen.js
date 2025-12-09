@@ -40,13 +40,13 @@ export default function WingmanChatScreen({ navigation }) {
         return;
       }
 
-      const authUserId = auth.user.id;
+      const userId = auth.user.id;
 
-      // Load user profile by auth_user_id
+      // Load user profile by id
       const { data: profile } = await supabase
         .from('user_profile')
         .select('*')
-        .eq('auth_user_id', authUserId)
+        .eq('id', userId)
         .single();
 
       if (profile) {
@@ -57,11 +57,11 @@ export default function WingmanChatScreen({ navigation }) {
         return;
       }
 
-      // Load recent chat history using auth_user_id
+      // Load recent chat history using user_id
       const { data: history } = await supabase
         .from('chat_messages')
         .select('*')
-        .eq('user_id', authUserId)
+        .eq('user_id', userId)
         .order('timestamp', { ascending: true })
         .limit(20);
 
@@ -109,17 +109,17 @@ export default function WingmanChatScreen({ navigation }) {
         return;
       }
 
-      const authUserId = auth.user.id;
+      const userId = auth.user.id;
 
       if (!userProfile) {
         Alert.alert('Error', 'Profile not found');
         return;
       }
 
-      // Save user message to database using auth_user_id
+      // Save user message to database using user_id
       await supabase.from('chat_messages').insert([
         {
-          user_id: authUserId,
+          user_id: userId,
           role: 'user',
           content: userMessage,
         },
@@ -140,10 +140,10 @@ export default function WingmanChatScreen({ navigation }) {
       const assistantMessage = { role: 'assistant', content: aiResponse };
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // Save AI response to database using auth_user_id
+      // Save AI response to database using user_id
       await supabase.from('chat_messages').insert([
         {
-          user_id: authUserId,
+          user_id: userId,
           role: 'assistant',
           content: aiResponse,
         },

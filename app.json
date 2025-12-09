@@ -5,6 +5,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "scheme": "myapp",
+    "deepLinking": true,
     "splash": {
       "backgroundColor": "#6366f1"
     },

@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../components/Button";
 import BottomNavBar from "../components/BottomNavBar";
 import { supabase } from "../lib/supabase";
+import { Storage } from "../lib/storage";
 import { TAGLINE_COMBOS } from "../constants/taglines";
 
 export default function HomeScreen({ navigation }) {
@@ -20,40 +21,49 @@ export default function HomeScreen({ navigation }) {
 
   const loadUserProfile = async () => {
     try {
-      // Get the authenticated user
+      // Check Supabase session
       const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError || !user) {
-        // No authenticated user, redirect to login
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        // No session → go to Login
         navigation.replace("Login");
         return;
       }
 
-      const authUserId = user.id;
+      const userId = session.user.id;
 
-      // Load profile by auth_user_id
+      // Fetch profile from Supabase
       const { data, error } = await supabase
         .from("user_profile")
         .select("*")
-        .eq("auth_user_id", authUserId)
+        .eq("id", userId)
         .single();
 
       if (error) {
-        // Profile doesn't exist, redirect to onboarding
+        // Profile doesn't exist, treat as incomplete session
         if (error.code === "PGRST116") {
-          navigation.replace("Onboarding");
+          await supabase.auth.signOut();
+          await Storage.removeUserId();
+          navigation.replace("Login");
           return;
         }
+        console.error("Error loading profile:", error);
         throw error;
       }
 
       if (!data) {
-        // No profile found, redirect to onboarding
-        navigation.replace("Onboarding");
+        // No profile found, treat as incomplete session
+        await supabase.auth.signOut();
+        await Storage.removeUserId();
+        navigation.replace("Login");
         return;
       }
+
+      // Store userId for backward compatibility
+      await Storage.setUserId(data.id);
 
       setUserProfile(data);
     } catch (error) {
