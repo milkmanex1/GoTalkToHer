@@ -6,6 +6,8 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -133,30 +135,94 @@ export default function PostActionReviewScreen({ navigation }) {
   if (submitted && aiFeedback) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
-        <ScrollView
-          className="flex-1 bg-background"
-          contentContainerStyle={{ paddingBottom: 20 }}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-          <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
-            <Card
-              className="mb-6"
-              style={{
-                backgroundColor: "rgba(255, 79, 163, 0.1)",
-                borderColor: "#FF4FA3",
-              }}
-            >
-              <Text
+          <ScrollView
+            className="flex-1 bg-background"
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+              <Card
+                className="mb-6"
                 style={{
-                  fontSize: 26,
-                  fontWeight: "bold",
-                  color: "#FF4FA3",
-                  marginBottom: 16,
-                  textAlign: "center",
-                  lineHeight: 33.8,
+                  backgroundColor: "rgba(255, 79, 163, 0.1)",
+                  borderColor: "#FF4FA3",
                 }}
               >
-                Great job taking action! 🎉
-              </Text>
+                <Text
+                  style={{
+                    fontSize: 26,
+                    fontWeight: "bold",
+                    color: "#FF4FA3",
+                    marginBottom: 16,
+                    textAlign: "center",
+                    lineHeight: 33.8,
+                  }}
+                >
+                  Great job taking action! 🎉
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "600",
+                    color: "#FFFFFF",
+                    marginBottom: 12,
+                  }}
+                >
+                  AI Feedback:
+                </Text>
+                <Text
+                  style={{ fontSize: 16, color: "#FFFFFF", lineHeight: 22.4 }}
+                >
+                  {aiFeedback}
+                </Text>
+              </Card>
+              <Button
+                title="Submit Another Review"
+                onPress={handleReset}
+                className="w-full"
+              />
+            </View>
+          </ScrollView>
+          {/* Bottom navigation bar */}
+          <BottomNavBar
+            navigation={navigation}
+            currentRoute="PostActionReview"
+          />
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      >
+        <ScrollView
+          className="flex-1 bg-background"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "600",
+                color: "#FF4FA3",
+                marginBottom: 24,
+              }}
+            >
+              How did it go?
+            </Text>
+
+            <View style={{ marginBottom: 24 }}>
               <Text
                 style={{
                   fontSize: 20,
@@ -165,154 +231,109 @@ export default function PostActionReviewScreen({ navigation }) {
                   marginBottom: 12,
                 }}
               >
-                AI Feedback:
+                Outcome
               </Text>
+              {OUTCOMES.map((outcome) => (
+                <TouchableOpacity
+                  key={outcome.id}
+                  onPress={() => setSelectedOutcome(outcome.id)}
+                >
+                  <Card
+                    className={`mb-2 ${
+                      selectedOutcome === outcome.id
+                        ? "border-primary border-2"
+                        : ""
+                    }`}
+                    style={
+                      selectedOutcome === outcome.id
+                        ? { backgroundColor: "rgba(255, 79, 163, 0.1)" }
+                        : {}
+                    }
+                  >
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight:
+                          selectedOutcome === outcome.id ? "600" : "400",
+                        color:
+                          selectedOutcome === outcome.id
+                            ? "#FF4FA3"
+                            : "#FFFFFF",
+                      }}
+                    >
+                      {outcome.label}
+                    </Text>
+                  </Card>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={{ marginBottom: 24 }}>
               <Text
-                style={{ fontSize: 16, color: "#FFFFFF", lineHeight: 22.4 }}
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: "#FFFFFF",
+                  marginBottom: 12,
+                }}
               >
-                {aiFeedback}
+                What happened?
               </Text>
-            </Card>
+              <TextInput
+                className="bg-surface border border-border rounded-xl px-4 py-3 min-h-[100px]"
+                style={{
+                  fontSize: 16,
+                  color: "#FFFFFF",
+                  textAlignVertical: "top",
+                }}
+                placeholder="Describe what happened..."
+                placeholderTextColor="#A0A0A0"
+                value={whatHappened}
+                onChangeText={setWhatHappened}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+
+            <View style={{ marginBottom: 24 }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: "#FFFFFF",
+                  marginBottom: 12,
+                }}
+              >
+                How did you feel?
+              </Text>
+              <TextInput
+                className="bg-surface border border-border rounded-xl px-4 py-3 min-h-[100px]"
+                style={{
+                  fontSize: 16,
+                  color: "#FFFFFF",
+                  textAlignVertical: "top",
+                }}
+                placeholder="Share your feelings..."
+                placeholderTextColor="#A0A0A0"
+                value={howTheyFelt}
+                onChangeText={setHowTheyFelt}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+
             <Button
-              title="Submit Another Review"
-              onPress={handleReset}
+              title={loading ? "Processing..." : "Get AI Feedback"}
+              onPress={handleSubmit}
+              disabled={loading}
+              loading={loading}
               className="w-full"
             />
           </View>
         </ScrollView>
         {/* Bottom navigation bar */}
         <BottomNavBar navigation={navigation} currentRoute="PostActionReview" />
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
-      <ScrollView
-        className="flex-1 bg-background"
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "600",
-              color: "#FF4FA3",
-              marginBottom: 24,
-            }}
-          >
-            How did it go?
-          </Text>
-
-          <View style={{ marginBottom: 24 }}>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "600",
-                color: "#FFFFFF",
-                marginBottom: 12,
-              }}
-            >
-              Outcome
-            </Text>
-            {OUTCOMES.map((outcome) => (
-              <TouchableOpacity
-                key={outcome.id}
-                onPress={() => setSelectedOutcome(outcome.id)}
-              >
-                <Card
-                  className={`mb-2 ${
-                    selectedOutcome === outcome.id
-                      ? "border-primary border-2"
-                      : ""
-                  }`}
-                  style={
-                    selectedOutcome === outcome.id
-                      ? { backgroundColor: "rgba(255, 79, 163, 0.1)" }
-                      : {}
-                  }
-                >
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      fontWeight:
-                        selectedOutcome === outcome.id ? "600" : "400",
-                      color:
-                        selectedOutcome === outcome.id ? "#FF4FA3" : "#FFFFFF",
-                    }}
-                  >
-                    {outcome.label}
-                  </Text>
-                </Card>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <View style={{ marginBottom: 24 }}>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "600",
-                color: "#FFFFFF",
-                marginBottom: 12,
-              }}
-            >
-              What happened?
-            </Text>
-            <TextInput
-              className="bg-surface border border-border rounded-xl px-4 py-3 min-h-[100px]"
-              style={{
-                fontSize: 16,
-                color: "#FFFFFF",
-                textAlignVertical: "top",
-              }}
-              placeholder="Describe what happened..."
-              placeholderTextColor="#A0A0A0"
-              value={whatHappened}
-              onChangeText={setWhatHappened}
-              multiline
-              textAlignVertical="top"
-            />
-          </View>
-
-          <View style={{ marginBottom: 24 }}>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "600",
-                color: "#FFFFFF",
-                marginBottom: 12,
-              }}
-            >
-              How did you feel?
-            </Text>
-            <TextInput
-              className="bg-surface border border-border rounded-xl px-4 py-3 min-h-[100px]"
-              style={{
-                fontSize: 16,
-                color: "#FFFFFF",
-                textAlignVertical: "top",
-              }}
-              placeholder="Share your feelings..."
-              placeholderTextColor="#A0A0A0"
-              value={howTheyFelt}
-              onChangeText={setHowTheyFelt}
-              multiline
-              textAlignVertical="top"
-            />
-          </View>
-
-          <Button
-            title={loading ? "Processing..." : "Get AI Feedback"}
-            onPress={handleSubmit}
-            disabled={loading}
-            loading={loading}
-            className="w-full"
-          />
-        </View>
-      </ScrollView>
-      {/* Bottom navigation bar */}
-      <BottomNavBar navigation={navigation} currentRoute="PostActionReview" />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

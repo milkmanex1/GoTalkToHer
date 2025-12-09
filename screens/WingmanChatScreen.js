@@ -175,9 +175,9 @@ export default function WingmanChatScreen({ navigation }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={[]}>
       <KeyboardAvoidingView
-        className="flex-1 bg-background"
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={90}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
       <FlatList
         ref={flatListRef}
@@ -186,7 +186,8 @@ export default function WingmanChatScreen({ navigation }) {
         renderItem={({ item }) => (
           <ChatMessage message={item.content} isUser={item.role === 'user'} />
         )}
-        contentContainerStyle={{ padding: 24 }}
+        contentContainerStyle={{ flexGrow: 1, padding: 24 }}
+        keyboardShouldPersistTaps="handled"
         onContentSizeChange={() =>
           flatListRef.current?.scrollToEnd({ animated: true })
         }

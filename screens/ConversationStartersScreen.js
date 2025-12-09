@@ -30,6 +30,19 @@ const CONVERSATION_STARTERS = {
     },
   ],
   "Situational Openers": {
+    Bars: [
+      {
+        opener:
+          "Hey, what are you drinking? I've been trying to decide what to order.",
+        tone: "Casual and friendly",
+        dos: [
+          "Be approachable",
+          "Keep it light and fun",
+          "Respect their space",
+        ],
+        donts: ["Be too loud", "Interrupt their group", "Be pushy"],
+      },
+    ],
     Gym: [
       {
         opener:

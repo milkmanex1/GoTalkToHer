@@ -15,7 +15,9 @@
     },
     "android": {
       "package": "com.gotalktoher.app",
-      "permissions": ["NOTIFICATIONS"]
+      "permissions": ["NOTIFICATIONS"],
+      "softwareKeyboardLayoutMode": "resize",
+      "windowSoftInputMode": "adjustResize"
     },
     "plugins": [
       [

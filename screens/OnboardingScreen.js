@@ -6,6 +6,8 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -91,10 +93,16 @@ export default function OnboardingScreen({ navigation }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={[]}>
-      <ScrollView 
-        className="flex-1 bg-background"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
+        <ScrollView 
+          className="flex-1 bg-background"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 20 }}
+          keyboardShouldPersistTaps="handled"
+        >
         <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
         {/* Large Title: 26-28 bold */}
         <Text
@@ -237,7 +245,8 @@ export default function OnboardingScreen({ navigation }) {
           className="w-full"
         />
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

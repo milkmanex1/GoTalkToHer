@@ -120,7 +120,7 @@ export default function HomeScreen({ navigation }) {
         {/* One BIG primary button: Start Approach Timer */}
         <View className="w-full px-6">
           <Button
-            title="Start Approach Timer"
+            title="I wanna talk to her"
             onPress={() => navigation.navigate("ApproachTimer")}
             className="w-full"
           />

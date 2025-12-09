@@ -6,6 +6,8 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -51,11 +53,17 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={[]}>
-      <ScrollView 
-        className="flex-1 bg-background"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-        <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
+        <ScrollView 
+          className="flex-1 bg-background"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 20 }}
+          keyboardShouldPersistTaps="handled"
+        >
+      <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
         {/* Large Title */}
         <Text
           style={{
@@ -157,8 +165,9 @@ export default function LoginScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
         </View>
-        </View>
-      </ScrollView>
+      </View>
+    </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

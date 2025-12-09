@@ -140,17 +140,17 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, keyboardHandlingEnabled: true }}
         />
         <Stack.Screen
           name="Register"
           component={RegisterScreen}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, keyboardHandlingEnabled: true }}
         />
         <Stack.Screen
           name="Onboarding"
           component={OnboardingScreen}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, keyboardHandlingEnabled: true }}
         />
         <Stack.Screen
           name="Home"
@@ -189,12 +189,12 @@ export default function AppNavigator() {
         <Stack.Screen
           name="PostActionReview"
           component={PostActionReviewScreen}
-          options={{ title: "Post-Action Review" }}
+          options={{ title: "Post-Action Review", keyboardHandlingEnabled: true }}
         />
         <Stack.Screen
           name="WingmanChat"
           component={WingmanChatScreen}
-          options={{ title: "Wingman AI Chat" }}
+          options={{ title: "Wingman AI Chat", keyboardHandlingEnabled: true }}
         />
         <Stack.Screen
           name="Profile"

@@ -39,4 +39,12 @@ export const TAGLINE_COMBOS = [
     headline: "Why just look?",
     subtext: "Go say hi.",
   },
+  {
+    headline: "Spotted a baddie?",
+    subtext: "Go say hi.",
+  },
+  {
+    headline: "Spotted a baddie?",
+    subtext: "Say hi before she's gone.",
+  },
 ];
