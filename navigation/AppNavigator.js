@@ -4,10 +4,10 @@ import {
   Text,
   ActivityIndicator,
   TouchableOpacity,
-  Image,
 } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import Svg, { Path, Circle } from "react-native-svg";
 import { supabase } from "../lib/supabase";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
@@ -22,6 +22,14 @@ import ProfileScreen from "../screens/ProfileScreen";
 import TestScreen from "../screens/TestScreen";
 
 const Stack = createStackNavigator();
+
+// User icon component
+const UserIcon = ({ color = "#FFFFFF", size = 24 }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Circle cx="12" cy="8" r="5" />
+    <Path d="M20 21a8 8 0 0 0-16 0" />
+  </Svg>
+);
 
 export default function AppNavigator() {
   const [initialRoute, setInitialRoute] = useState(null);
@@ -157,18 +165,13 @@ export default function AppNavigator() {
           component={HomeScreen}
           options={({ navigation }) => ({
             title: "Go Talk To Her",
-            headerRight: () => (
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Profile")}
-                style={{ marginRight: 16, padding: 4 }}
-              >
-                <Image
-                  source={require("../assets/images/user_icon_1.png")}
-                  style={{ width: 32, height: 32 }}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            ),
+            headerStyle: {
+              backgroundColor: "#0E0F12",
+              borderBottomColor: "#2D2F34",
+              borderBottomWidth: 1,
+              height: 100,
+            },
+            headerTitleAlign: "center",
           })}
         />
         <Stack.Screen

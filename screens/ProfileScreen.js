@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
+import BottomNavBar from "../components/BottomNavBar";
 
 export default function ProfileScreen({ navigation }) {
   const [userProfile, setUserProfile] = useState(null);
@@ -359,6 +360,8 @@ export default function ProfileScreen({ navigation }) {
         </TouchableOpacity>
         </View>
       </ScrollView>
+      {/* Bottom navigation bar */}
+      <BottomNavBar navigation={navigation} currentRoute="Profile" />
     </SafeAreaView>
   );
 }
