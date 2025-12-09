@@ -8,9 +8,11 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import BottomNavBar from "../components/BottomNavBar";
@@ -28,6 +30,7 @@ const OUTCOMES = [
 ];
 
 export default function PostActionReviewScreen({ navigation }) {
+  const { profile, session, ready, loading: authLoading } = useAuth();
   const [selectedOutcome, setSelectedOutcome] = useState(null);
   const [whatHappened, setWhatHappened] = useState("");
   const [howTheyFelt, setHowTheyFelt] = useState("");
@@ -47,33 +50,13 @@ export default function PostActionReviewScreen({ navigation }) {
       return;
     }
 
+    if (!profile || !session) {
+      Alert.alert("Error", "You must be logged in to submit a review");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Get the authenticated user
-      const { data: auth, error: authError } = await supabase.auth.getUser();
-      if (authError || !auth?.user) {
-        Alert.alert("Error", "You must be logged in to submit a review");
-        return;
-      }
-
-      const userId = auth.user.id;
-
-      // Load profile by id
-      const { data: profile } = await supabase
-        .from("user_profile")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (!profile) {
-        Alert.alert(
-          "Error",
-          "Profile not found. Please complete onboarding first."
-        );
-        navigation.replace("Onboarding");
-        return;
-      }
-
       const notes = {
         whatHappened: whatHappened.trim(),
         howTheyFelt: howTheyFelt.trim(),
@@ -91,7 +74,7 @@ export default function PostActionReviewScreen({ navigation }) {
       // Save to database using user_id
       const { error } = await supabase.from("approach_events").insert([
         {
-          user_id: userId,
+          user_id: profile.id,
           outcome: selectedOutcome,
           notes: JSON.stringify(notes),
           ai_feedback: feedback,
@@ -103,7 +86,7 @@ export default function PostActionReviewScreen({ navigation }) {
       // Update user profile stats and progress
       // Only count as approach if they actually approached (not "did_not_approach")
       if (selectedOutcome !== "did_not_approach") {
-        await updateProgress(userId, "approach", selectedOutcome);
+        await updateProgress(profile.id, "approach", selectedOutcome);
       }
 
       setSubmitted(true);
@@ -128,17 +111,13 @@ export default function PostActionReviewScreen({ navigation }) {
       return;
     }
 
+    if (!profile || !session) {
+      Alert.alert("Error", "You must be logged in to submit a review");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Get the authenticated user
-      const { data: auth, error: authError } = await supabase.auth.getUser();
-      if (authError || !auth?.user) {
-        Alert.alert("Error", "You must be logged in to submit a review");
-        return;
-      }
-
-      const userId = auth.user.id;
-
       // Save to database using user_id (without AI feedback)
       const notes = {
         whatHappened: whatHappened.trim() || "",
@@ -147,7 +126,7 @@ export default function PostActionReviewScreen({ navigation }) {
 
       const { error } = await supabase.from("approach_events").insert([
         {
-          user_id: userId,
+          user_id: profile.id,
           outcome: selectedOutcome,
           notes: JSON.stringify(notes),
           ai_feedback: null, // No AI feedback for quick submit
@@ -159,7 +138,7 @@ export default function PostActionReviewScreen({ navigation }) {
       // Update user profile stats and progress
       // Only count as approach if they actually approached (not "did_not_approach")
       if (selectedOutcome !== "did_not_approach") {
-        await updateProgress(userId, "approach", selectedOutcome);
+        await updateProgress(profile.id, "approach", selectedOutcome);
       }
 
       // Show success and reset form
@@ -177,6 +156,27 @@ export default function PostActionReviewScreen({ navigation }) {
       setLoading(false);
     }
   };
+
+  if (!ready || authLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
+        <View className="flex-1 items-center justify-center bg-background">
+          <ActivityIndicator size="large" color="#FF4FA3" />
+          <Text className="text-textSecondary mt-4">Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!profile || !session) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
+        <View className="flex-1 items-center justify-center bg-background">
+          <Text className="text-textSecondary">Please log in</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (submitted && aiFeedback) {
     return (

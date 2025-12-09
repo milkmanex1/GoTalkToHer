@@ -1,85 +1,47 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import BottomNavBar from "../components/BottomNavBar";
-import { supabase } from "../lib/supabase";
-import { Storage } from "../lib/storage";
 import { TAGLINE_COMBOS } from "../constants/taglines";
 
 export default function HomeScreen({ navigation }) {
-  const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { profile, session, ready, loading: authLoading } = useAuth();
   const [tagline, setTagline] = useState(TAGLINE_COMBOS[0]);
 
   useEffect(() => {
-    loadUserProfile();
     // Randomly select a tagline combo on mount
     const randomIndex = Math.floor(Math.random() * TAGLINE_COMBOS.length);
     setTagline(TAGLINE_COMBOS[randomIndex]);
   }, []);
 
-  const loadUserProfile = async () => {
-    try {
-      // Check Supabase session
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session) {
-        // No session → go to Login
-        navigation.replace("Login");
-        return;
-      }
-
-      const userId = session.user.id;
-
-      // Fetch profile from Supabase
-      const { data, error } = await supabase
-        .from("user_profile")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        // Profile doesn't exist, treat as incomplete session
-        if (error.code === "PGRST116") {
-          await supabase.auth.signOut();
-          await Storage.removeUserId();
-          navigation.replace("Login");
-          return;
-        }
-        console.error("Error loading profile:", error);
-        throw error;
-      }
-
-      if (!data) {
-        // No profile found, treat as incomplete session
-        await supabase.auth.signOut();
-        await Storage.removeUserId();
-        navigation.replace("Login");
-        return;
-      }
-
-      // Store userId for backward compatibility
-      await Storage.setUserId(data.id);
-
-      setUserProfile(data);
-    } catch (error) {
-      console.error("Error loading profile:", error);
-      // On error, redirect to login
-      navigation.replace("Login");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (!ready || authLoading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
         <View className="flex-1 items-center justify-center bg-background">
-          <Text className="text-textSecondary">Loading...</Text>
+          <ActivityIndicator size="large" color="#FF4FA3" />
+          <Text className="text-textSecondary mt-4">Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!session) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+        <View className="flex-1 items-center justify-center bg-background">
+          <Text className="text-textSecondary">Please log in</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+        <View className="flex-1 items-center justify-center bg-background">
+          <Text className="text-textSecondary">Profile not found</Text>
         </View>
       </SafeAreaView>
     );

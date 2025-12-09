@@ -7,9 +7,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import ChatMessage from '../components/ChatMessage';
 import BottomNavBar from '../components/BottomNavBar';
@@ -18,50 +20,35 @@ import { generatePersonalizedCoaching } from '../lib/aiService';
 import { handleError } from '../lib/errorHandler';
 
 export default function WingmanChatScreen({ navigation }) {
+  const { profile, session, ready, loading: authLoading } = useAuth();
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const flatListRef = useRef(null);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    loadUserProfileAndHistory();
-  }, []);
+    if (ready && profile && session) {
+      loadChatHistory();
+    } else if (ready && !session) {
+      Alert.alert('Error', 'You must be logged in to use the chat');
+      navigation.goBack();
+    } else if (ready && session && !profile) {
+      Alert.alert('Error', 'Profile not found. Please complete onboarding first.');
+      navigation.replace('Onboarding');
+    }
+  }, [ready, profile, session]);
 
-  const loadUserProfileAndHistory = async () => {
+  const loadChatHistory = async () => {
+    if (!profile?.id) return;
+
     try {
-      // Get the authenticated user
-      const { data: auth, error: authError } = await supabase.auth.getUser();
-      if (authError || !auth?.user) {
-        Alert.alert('Error', 'You must be logged in to use the chat');
-        navigation.goBack();
-        return;
-      }
-
-      const userId = auth.user.id;
-
-      // Load user profile by id
-      const { data: profile } = await supabase
-        .from('user_profile')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (profile) {
-        setUserProfile(profile);
-      } else {
-        Alert.alert('Error', 'Profile not found. Please complete onboarding first.');
-        navigation.replace('Onboarding');
-        return;
-      }
-
       // Load recent chat history using user_id
       const { data: history } = await supabase
         .from('chat_messages')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', profile.id)
         .order('timestamp', { ascending: true })
         .limit(20);
 
@@ -92,6 +79,10 @@ export default function WingmanChatScreen({ navigation }) {
 
   const handleSend = async () => {
     if (!inputText.trim() || loading) return;
+    if (!profile || !session) {
+      Alert.alert('Error', 'You must be logged in to send messages');
+      return;
+    }
 
     const userMessage = inputText.trim();
     setInputText('');
@@ -102,24 +93,10 @@ export default function WingmanChatScreen({ navigation }) {
     setMessages((prev) => [...prev, newUserMessage]);
 
     try {
-      // Get the authenticated user
-      const { data: auth, error: authError } = await supabase.auth.getUser();
-      if (authError || !auth?.user) {
-        Alert.alert('Error', 'You must be logged in to send messages');
-        return;
-      }
-
-      const userId = auth.user.id;
-
-      if (!userProfile) {
-        Alert.alert('Error', 'Profile not found');
-        return;
-      }
-
       // Save user message to database using user_id
       await supabase.from('chat_messages').insert([
         {
-          user_id: userId,
+          user_id: profile.id,
           role: 'user',
           content: userMessage,
         },
@@ -132,7 +109,7 @@ export default function WingmanChatScreen({ navigation }) {
       }));
 
       const aiResponse = await generatePersonalizedCoaching(
-        userProfile,
+        profile,
         userMessage,
         chatHistory
       );
@@ -143,7 +120,7 @@ export default function WingmanChatScreen({ navigation }) {
       // Save AI response to database using user_id
       await supabase.from('chat_messages').insert([
         {
-          user_id: userId,
+          user_id: profile.id,
           role: 'assistant',
           content: aiResponse,
         },
@@ -162,11 +139,22 @@ export default function WingmanChatScreen({ navigation }) {
     }
   };
 
-  if (loadingHistory) {
+  if (!ready || authLoading || loadingHistory) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={[]}>
         <View className="flex-1 items-center justify-center bg-background">
-          <Text style={{ color: '#A0A0A0' }}>Loading chat...</Text>
+          <ActivityIndicator size="large" color="#FF4FA3" />
+          <Text style={{ color: '#A0A0A0', marginTop: 16 }}>Loading chat...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!profile || !session) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={[]}>
+        <View className="flex-1 items-center justify-center bg-background">
+          <Text style={{ color: '#A0A0A0' }}>Please log in</Text>
         </View>
       </SafeAreaView>
     );

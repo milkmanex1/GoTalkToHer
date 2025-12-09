@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,7 @@ import {
 } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { supabase } from "../lib/supabase";
-import { Storage } from "../lib/storage";
+import { useAuth } from "../context/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
 import HomeScreen from "../screens/HomeScreen";
@@ -25,106 +24,40 @@ const Stack = createStackNavigator();
 export const navigationRef = React.createRef();
 
 export default function AppNavigator() {
-  const [initialRoute, setInitialRoute] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { session, profile, ready, loading } = useAuth();
+  const isInitialMount = useRef(true);
 
+  // Reset navigation when auth state changes (after initial load)
   useEffect(() => {
-    checkAuthAndRoute();
-
-    // Global auth listener - handles magic link callbacks and auth state changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Only process if navigation is ready
-      if (!navigationRef.current?.isReady()) {
-        return;
-      }
-
-      if (session?.user) {
-        // Validate user exists
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError || !user) {
-          // Invalid session, sign out and go to login
-          await supabase.auth.signOut();
-          await Storage.removeUserId();
-          navigationRef.current?.reset({
-            index: 0,
-            routes: [{ name: "Login" }],
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Check if profile exists
-        const { data: profile } = await supabase
-          .from("user_profile")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (profile) {
-          await Storage.setUserId(user.id);
-          navigationRef.current?.reset({
-            index: 0,
-            routes: [{ name: "Home" }],
-          });
-        } else {
-          // If profile missing, treat session as invalid
-          await supabase.auth.signOut();
-          await Storage.removeUserId();
-          navigationRef.current?.reset({
-            index: 0,
-            routes: [{ name: "Login" }],
-          });
-        }
-      } else {
-        // User is signed out
-        await Storage.removeUserId();
-        navigationRef.current?.reset({
-          index: 0,
-          routes: [{ name: "Login" }],
-        });
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  async function checkAuthAndRoute() {
-    const { data: { session } } = await supabase.auth.getSession();
-
+    if (!ready || loading) return;
+    
+    // Skip reset on initial mount - initialRouteName handles that
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    // Only reset when auth state changes after mount
     if (!session) {
-      setInitialRoute("Login");
-      setLoading(false);
-      return;
+      navigationRef.current?.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    } else if (session && !profile) {
+      navigationRef.current?.reset({
+        index: 0,
+        routes: [{ name: "Onboarding" }],
+      });
+    } else if (session && profile) {
+      navigationRef.current?.reset({
+        index: 0,
+        routes: [{ name: "Home" }],
+      });
     }
+  }, [ready, loading, session, profile]);
 
-    const supabaseUser = session.user;
-
-    const { data: profile } = await supabase
-      .from("user_profile")
-      .select("*")
-      .eq("id", supabaseUser.id)
-      .single();
-
-    if (!profile) {
-      // Stale or incomplete session → force logout
-      await supabase.auth.signOut();
-      await Storage.removeUserId();
-      setInitialRoute("Login");
-      setLoading(false);
-      return;
-    }
-
-    setInitialRoute("Home");
-    setLoading(false);
-  }
-
-  if (loading || !initialRoute) {
+  // Show loading screen while auth is initializing
+  if (!ready || loading) {
     return (
       <View
         style={{
@@ -138,6 +71,14 @@ export default function AppNavigator() {
         <Text style={{ color: "#D0D0D0", marginTop: 16 }}>Loading...</Text>
       </View>
     );
+  }
+
+  // Determine initial route based on auth state
+  let initialRoute = "Login";
+  if (session && profile) {
+    initialRoute = "Home";
+  } else if (session && !profile) {
+    initialRoute = "Onboarding";
   }
 
   return (

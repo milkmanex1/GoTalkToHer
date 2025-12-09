@@ -12,9 +12,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
+import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
-import { Storage } from "../lib/storage";
 import { handleError } from "../lib/errorHandler";
 
 const CHALLENGES = [
@@ -29,24 +29,20 @@ const CHALLENGES = [
 const AGE_RANGES = ["18-22", "23-27", "28-32", "33-37", "38-42", "43+"];
 
 export default function OnboardingScreen({ navigation }) {
+  const { session, refresh } = useAuth();
   const [name, setName] = useState("");
   const [ageRange, setAgeRange] = useState("23-27");
   const [confidenceLevel, setConfidenceLevel] = useState(5);
   const [biggestChallenge, setBiggestChallenge] = useState(CHALLENGES[0]);
   const [loading, setLoading] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const insets = useSafeAreaInsets();
 
   // Auth guard: Ensure user is authenticated before showing onboarding
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
-        navigation.replace("Login");
-      } else {
-        setCheckingAuth(false);
-      }
-    });
-  }, [navigation]);
+    if (session === null) {
+      navigation.replace("Login");
+    }
+  }, [session, navigation]);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -54,22 +50,18 @@ export default function OnboardingScreen({ navigation }) {
       return;
     }
 
+    if (!session?.user) {
+      Alert.alert("Error", "Please sign in to continue");
+      navigation.replace("Login");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Get authenticated user
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-      if (authError || !user) {
-        // No authenticated user, redirect to login
-        Alert.alert("Error", "Please sign in to continue");
-        navigation.replace("Login");
-        return;
-      }
-
-      // Insert the profile using id: user.id
+      // Insert the profile using id: session.user.id
       const { error } = await supabase.from("user_profile").insert([
         {
-          id: user.id,
+          id: session.user.id,
           name: name.trim(),
           age_range: ageRange,
           confidence_level: confidenceLevel,
@@ -86,14 +78,16 @@ export default function OnboardingScreen({ navigation }) {
         if (error.code === "23505") {
           // Unique constraint violation - profile already exists
           Alert.alert("Error", "Profile already exists. Redirecting to home...");
+          // Refresh profile to load existing one
+          await refresh();
           navigation.replace("Home");
           return;
         }
         throw error;
       }
 
-      // Store userId
-      await Storage.setUserId(user.id);
+      // Refresh profile so AuthContext updates immediately
+      await refresh();
 
       // Navigate to Home using navigation reset
       navigation.reset({
@@ -106,18 +100,6 @@ export default function OnboardingScreen({ navigation }) {
       setLoading(false);
     }
   };
-
-  // Show loading while checking auth
-  if (checkingAuth) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
-        <View className="flex-1 items-center justify-center bg-background">
-          <ActivityIndicator size="large" color="#FF4FA3" />
-          <Text className="text-textSecondary mt-4">Loading...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>

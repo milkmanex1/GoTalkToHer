@@ -7,6 +7,7 @@ import {
   registerForPushNotificationsAsync,
   scheduleDailyMotivationalNotification,
 } from "./lib/notifications";
+import { AuthProvider } from "./context/AuthContext";
 import AppNavigator from "./navigation/AppNavigator";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import "./global.css";
@@ -35,8 +36,10 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ErrorBoundary>
-        <StatusBar style="light" />
-        <AppNavigator />
+        <AuthProvider>
+          <StatusBar style="light" />
+          <AppNavigator />
+        </AuthProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
   );

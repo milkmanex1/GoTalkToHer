@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,17 +10,18 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
 import Timer from "../components/Timer";
 import Button from "../components/Button";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { updateProgress } from "../lib/progress";
+import { Storage } from "../lib/storage";
 
 const { width, height } = Dimensions.get("window");
-
-const DURATION = 15; // Fixed timer duration
 
 const MOTIVATIONAL_MESSAGES = [
   "Go even if you're not ready.",
@@ -51,11 +52,13 @@ const TIMER_COUNTDOWN_MESSAGES = [
 ];
 
 export default function ApproachTimerScreen({ navigation }) {
+  const { profile, session } = useAuth();
   const [isActive, setIsActive] = useState(false);
   const [timerComplete, setTimerComplete] = useState(false);
   const [sound, setSound] = useState(null);
   const [timerStartedAt, setTimerStartedAt] = useState(null);
-  const [remainingTime, setRemainingTime] = useState(DURATION);
+  const [timerDuration, setTimerDuration] = useState(10); // Default to 10 seconds
+  const [remainingTime, setRemainingTime] = useState(10);
   const [motivationalMessage, setMotivationalMessage] = useState(
     MOTIVATIONAL_MESSAGES[0]
   );
@@ -66,6 +69,31 @@ export default function ApproachTimerScreen({ navigation }) {
   const bottomTextOpacity = useRef(new Animated.Value(0)).current;
   const flashOpacity = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
+
+  // Load timer duration from storage
+  const loadTimerDuration = useCallback(async () => {
+    try {
+      const duration = await Storage.getTimerDuration();
+      setTimerDuration(duration);
+      // Only update remainingTime if timer is not active
+      if (!isActive) {
+        setRemainingTime(duration);
+      }
+    } catch (error) {
+      console.error("Error loading timer duration:", error);
+    }
+  }, [isActive]);
+
+  // Load duration on mount and when screen is focused
+  useEffect(() => {
+    loadTimerDuration();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTimerDuration();
+    }, [loadTimerDuration])
+  );
 
   useEffect(() => {
     return () => {
@@ -90,7 +118,7 @@ export default function ApproachTimerScreen({ navigation }) {
     setTimerStartedAt(new Date().toISOString());
     setIsActive(true);
     setTimerComplete(false);
-    setRemainingTime(DURATION);
+    setRemainingTime(timerDuration);
     // Randomly select a countdown message
     const randomIndex = Math.floor(
       Math.random() * TIMER_COUNTDOWN_MESSAGES.length
@@ -157,12 +185,10 @@ export default function ApproachTimerScreen({ navigation }) {
 
     // Save timer event to Supabase and update progress
     try {
-      const { data: auth } = await supabase.auth.getUser();
-      if (auth?.user) {
-        const authUserId = auth.user.id;
+      if (profile?.id && session) {
         await supabase.from("approach_events").insert([
           {
-            user_id: authUserId,
+            user_id: profile.id,
             timer_started_at: timerStartedAt,
             timer_completed: true,
             outcome: "timer_completed",
@@ -170,7 +196,7 @@ export default function ApproachTimerScreen({ navigation }) {
         ]);
 
         // Update progress stats
-        await updateProgress(authUserId, "timer", "timer_completed");
+        await updateProgress(profile.id, "timer", "timer_completed");
       }
     } catch (error) {
       console.error("Error saving timer event:", error);
@@ -181,7 +207,7 @@ export default function ApproachTimerScreen({ navigation }) {
     setIsActive(false);
     setTimerComplete(false);
     setTimerStartedAt(null);
-    setRemainingTime(DURATION);
+    setRemainingTime(timerDuration);
     fadeAnim.setValue(0);
     bottomTextOpacity.setValue(0);
     flashOpacity.setValue(0);
@@ -257,8 +283,8 @@ export default function ApproachTimerScreen({ navigation }) {
                   marginBottom: 12,
                 }}
               >
-                You have {DURATION} seconds. When it hits zero, you approach
-                her.
+                You have {timerDuration} seconds. When it hits zero, you
+                approach her.
               </Text>
               <Text
                 style={{
@@ -296,7 +322,7 @@ export default function ApproachTimerScreen({ navigation }) {
             {/* Large circular countdown centered */}
             <View className="flex-1 items-center justify-center px-6">
               <Timer
-                duration={DURATION}
+                duration={timerDuration}
                 onComplete={handleComplete}
                 isActive={isActive}
                 onTimeUpdate={handleTimerUpdate}
@@ -336,54 +362,59 @@ export default function ApproachTimerScreen({ navigation }) {
             style={[styles.completeContainer, { opacity: fadeAnim }]}
           >
             <View className="flex-1 items-center justify-center px-6">
-              <View className="mb-12 items-center">
+              <View
+                className="items-center"
+                style={{ paddingTop: 28, paddingBottom: 18 }}
+              >
                 <Image
                   source={require("../assets/images/pink_lightning.png")}
                   style={{
-                    width: 180,
-                    height: 180,
+                    width: 200,
+                    height: 200,
                     resizeMode: "contain",
-                    marginBottom: 32,
                   }}
                 />
                 {/* Large bold pink headline */}
                 <Text
                   style={{
-                    fontSize: 36,
+                    fontSize: 44,
                     fontWeight: "bold",
                     color: "#FF4FA3",
                     textAlign: "center",
-                    marginBottom: 16,
-                    lineHeight: 46.8,
+                    paddingTop: 28,
+                    paddingBottom: 18,
+                    lineHeight: 57.2,
                   }}
                 >
                   Go now.
                 </Text>
-                {/* Subtext in soft white */}
+                {/* Subtext in soft grey */}
                 <Text
                   style={{
-                    fontSize: 20,
-                    fontWeight: "600",
-                    color: "#FFFFFF",
+                    fontSize: 18,
+                    color: "#D0D0D0",
                     textAlign: "center",
-                    lineHeight: 28,
+                    lineHeight: 25.2,
+                    marginBottom: 40,
                   }}
                 >
                   {motivationalMessage}
                 </Text>
               </View>
-              <View className="w-full px-6">
-                <Button
-                  title="Try again"
-                  onPress={handleReset}
-                  className="w-full mb-4"
-                />
-                <Button
-                  title="I approached"
-                  onPress={() => navigation.navigate("PostActionReview")}
-                  className="w-full"
-                />
-              </View>
+
+              {/* Main CTA button - I approached */}
+              <TouchableOpacity
+                onPress={() => navigation.navigate("PostActionReview")}
+                style={styles.approachedButton}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.approachedButtonText}>I approached</Text>
+              </TouchableOpacity>
+
+              {/* Try again as text link */}
+              <Text onPress={handleReset} style={styles.tryAgainLink}>
+                Try again
+              </Text>
             </View>
           </Animated.View>
         )}
@@ -465,5 +496,29 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "#FF4FA3",
     zIndex: 10,
+  },
+  approachedButton: {
+    width: "67.5%",
+    height: 44,
+    backgroundColor: "rgba(255,79,163,0.08)",
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: "#FF4FA3",
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginTop: 42,
+  },
+  approachedButtonText: {
+    color: "#FF4FA3",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  tryAgainLink: {
+    marginTop: 15,
+    textAlign: "center",
+    color: "#A0A0A0",
+    fontSize: 14,
+    textDecorationLine: "underline",
   },
 });
