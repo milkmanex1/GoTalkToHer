@@ -122,6 +122,62 @@ export default function PostActionReviewScreen({ navigation }) {
     setSubmitted(false);
   };
 
+  const handleQuickSubmit = async () => {
+    if (!selectedOutcome) {
+      Alert.alert("Error", "Please select an outcome");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Get the authenticated user
+      const { data: auth, error: authError } = await supabase.auth.getUser();
+      if (authError || !auth?.user) {
+        Alert.alert("Error", "You must be logged in to submit a review");
+        return;
+      }
+
+      const userId = auth.user.id;
+
+      // Save to database using user_id (without AI feedback)
+      const notes = {
+        whatHappened: whatHappened.trim() || "",
+        howTheyFelt: howTheyFelt.trim() || "",
+      };
+
+      const { error } = await supabase.from("approach_events").insert([
+        {
+          user_id: userId,
+          outcome: selectedOutcome,
+          notes: JSON.stringify(notes),
+          ai_feedback: null, // No AI feedback for quick submit
+        },
+      ]);
+
+      if (error) throw error;
+
+      // Update user profile stats and progress
+      // Only count as approach if they actually approached (not "did_not_approach")
+      if (selectedOutcome !== "did_not_approach") {
+        await updateProgress(userId, "approach", selectedOutcome);
+      }
+
+      // Show success and reset form
+      Alert.alert("Success", "Review submitted successfully!", [
+        {
+          text: "OK",
+          onPress: () => {
+            handleReset();
+          },
+        },
+      ]);
+    } catch (error) {
+      handleError(error, "Failed to submit review. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (submitted && aiFeedback) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
@@ -166,7 +222,7 @@ export default function PostActionReviewScreen({ navigation }) {
                   AI Feedback:
                 </Text>
                 <Text
-                  style={{ fontSize: 16, color: "#FFFFFF", lineHeight: 22.4 }}
+                  style={{ fontSize: 16, color: "#FFFFFF", lineHeight: 24 }}
                 >
                   {aiFeedback}
                 </Text>
@@ -257,6 +313,14 @@ export default function PostActionReviewScreen({ navigation }) {
                 </TouchableOpacity>
               ))}
             </View>
+
+            <Button
+              title={loading ? "Submitting..." : "Submit Review"}
+              onPress={handleQuickSubmit}
+              disabled={loading}
+              loading={loading}
+              className="w-full mb-6"
+            />
 
             <View style={{ marginBottom: 24 }}>
               <Text

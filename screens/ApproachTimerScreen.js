@@ -376,6 +376,11 @@ export default function ApproachTimerScreen({ navigation }) {
                 <Button
                   title="Try again"
                   onPress={handleReset}
+                  className="w-full mb-4"
+                />
+                <Button
+                  title="I approached"
+                  onPress={() => navigation.navigate("PostActionReview")}
                   className="w-full"
                 />
               </View>

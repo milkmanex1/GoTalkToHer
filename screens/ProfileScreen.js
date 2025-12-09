@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -18,27 +18,49 @@ export default function ProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [activityData, setActivityData] = useState([]);
   const insets = useSafeAreaInsets();
+  const isLoadingRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       loadUserProfile();
     });
+    // Load profile on initial mount
+    loadUserProfile();
     return unsubscribe;
   }, [navigation]);
 
   useEffect(() => {
-    if (userProfile) {
+    if (userProfile && isMountedRef.current) {
       loadActivityData();
     }
   }, [userProfile]);
 
-  const loadUserProfile = async () => {
+  const loadUserProfile = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (isLoadingRef.current) {
+      return;
+    }
+
+    isLoadingRef.current = true;
+    setLoading(true);
+
     try {
       // Get the authenticated user
       const {
         data: { user },
         error: authError,
       } = await supabase.auth.getUser();
+      
+      if (!isMountedRef.current) return;
+      
       if (authError || !user) {
         navigation.replace("Login");
         return;
@@ -52,6 +74,8 @@ export default function ProfileScreen({ navigation }) {
         .select("*")
         .eq("id", userId)
         .single();
+
+      if (!isMountedRef.current) return;
 
       if (error) {
         console.error("Error loading profile:", error);
@@ -67,27 +91,42 @@ export default function ProfileScreen({ navigation }) {
         return;
       }
 
-      setUserProfile(data);
+      if (isMountedRef.current) {
+        setUserProfile(data);
+      }
     } catch (error) {
       console.error("Error loading profile:", error);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        isLoadingRef.current = false;
+        setLoading(false);
+      }
     }
-  };
+  }, [navigation]);
 
-  const loadActivityData = async () => {
+  const loadActivityData = useCallback(async () => {
+    if (!isMountedRef.current) return;
+    
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+      
+      if (!isMountedRef.current) return;
+      
       if (user) {
         const heatmapData = await getActivityHeatmap(user.id);
-        setActivityData(heatmapData);
+        if (isMountedRef.current) {
+          setActivityData(heatmapData);
+        }
       }
     } catch (error) {
       console.error("Error loading activity data:", error);
     }
-  };
+  }, []);
 
   const handleSignOut = async () => {
     try {
