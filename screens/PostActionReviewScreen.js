@@ -63,35 +63,61 @@ export default function PostActionReviewScreen({ navigation }) {
         howTheyFelt: howTheyFelt.trim(),
       };
 
-      // Generate AI feedback
-      const feedback = await processPostActionReview(
-        OUTCOMES.find((o) => o.id === selectedOutcome).label,
-        notes,
-        profile
-      );
+      // Generate AI feedback with timeout protection
+      let feedback;
+      try {
+        feedback = await Promise.race([
+          processPostActionReview(
+            OUTCOMES.find((o) => o.id === selectedOutcome).label,
+            notes,
+            profile
+          ),
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error("AI feedback request timed out")),
+              30000
+            )
+          ),
+        ]);
+      } catch (aiError) {
+        console.error("Error generating AI feedback:", aiError);
+        // Continue without AI feedback if it fails
+        feedback = null;
+      }
 
       setAiFeedback(feedback);
 
       // Save to database using user_id
-      const { error } = await supabase.from("approach_events").insert([
-        {
-          user_id: profile.id,
-          outcome: selectedOutcome,
-          notes: JSON.stringify(notes),
-          ai_feedback: feedback,
-        },
-      ]);
+      const { error: insertError } = await supabase
+        .from("approach_events")
+        .insert([
+          {
+            user_id: profile.id,
+            outcome: selectedOutcome,
+            notes: JSON.stringify(notes),
+            ai_feedback: feedback,
+          },
+        ]);
 
-      if (error) throw error;
+      if (insertError) {
+        console.error("Database insert error:", insertError);
+        throw insertError;
+      }
 
       // Update user profile stats and progress
       // Only count as approach if they actually approached (not "did_not_approach")
       if (selectedOutcome !== "did_not_approach") {
-        await updateProgress(profile.id, "approach", selectedOutcome);
+        try {
+          await updateProgress(profile.id, "approach", selectedOutcome);
+        } catch (progressError) {
+          console.error("Error updating progress:", progressError);
+          // Don't throw - progress update failure shouldn't block submission
+        }
       }
 
       setSubmitted(true);
     } catch (error) {
+      console.error("Error in handleSubmit:", error);
       handleError(error, "Failed to submit review. Please try again.");
     } finally {
       setLoading(false);
@@ -125,21 +151,31 @@ export default function PostActionReviewScreen({ navigation }) {
         howTheyFelt: howTheyFelt.trim() || "",
       };
 
-      const { error } = await supabase.from("approach_events").insert([
-        {
-          user_id: profile.id,
-          outcome: selectedOutcome,
-          notes: JSON.stringify(notes),
-          ai_feedback: null, // No AI feedback for quick submit
-        },
-      ]);
+      const { error: insertError } = await supabase
+        .from("approach_events")
+        .insert([
+          {
+            user_id: profile.id,
+            outcome: selectedOutcome,
+            notes: JSON.stringify(notes),
+            ai_feedback: null, // No AI feedback for quick submit
+          },
+        ]);
 
-      if (error) throw error;
+      if (insertError) {
+        console.error("Database insert error:", insertError);
+        throw insertError;
+      }
 
       // Update user profile stats and progress
       // Only count as approach if they actually approached (not "did_not_approach")
       if (selectedOutcome !== "did_not_approach") {
-        await updateProgress(profile.id, "approach", selectedOutcome);
+        try {
+          await updateProgress(profile.id, "approach", selectedOutcome);
+        } catch (progressError) {
+          console.error("Error updating progress:", progressError);
+          // Don't throw - progress update failure shouldn't block submission
+        }
       }
 
       // Show success and reset form
@@ -152,6 +188,7 @@ export default function PostActionReviewScreen({ navigation }) {
         },
       ]);
     } catch (error) {
+      console.error("Error in handleQuickSubmit:", error);
       handleError(error, "Failed to submit review. Please try again.");
     } finally {
       setLoading(false);
@@ -185,7 +222,7 @@ export default function PostActionReviewScreen({ navigation }) {
     );
   }
 
-  if (submitted && aiFeedback) {
+  if (submitted) {
     return (
       <SafeAreaView
         style={{ flex: 1, backgroundColor: theme.background }}
@@ -221,21 +258,41 @@ export default function PostActionReviewScreen({ navigation }) {
                 >
                   Great job taking action! 🎉
                 </Text>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "600",
-                    color: theme.text,
-                    marginBottom: 12,
-                  }}
-                >
-                  AI Feedback:
-                </Text>
-                <Text
-                  style={{ fontSize: 16, color: theme.text, lineHeight: 24 }}
-                >
-                  {aiFeedback}
-                </Text>
+                {aiFeedback && (
+                  <>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: "600",
+                        color: theme.text,
+                        marginBottom: 12,
+                      }}
+                    >
+                      AI Feedback:
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: theme.text,
+                        lineHeight: 24,
+                      }}
+                    >
+                      {aiFeedback}
+                    </Text>
+                  </>
+                )}
+                {!aiFeedback && (
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: theme.text,
+                      lineHeight: 24,
+                      textAlign: "center",
+                    }}
+                  >
+                    Your review has been submitted successfully!
+                  </Text>
+                )}
               </Card>
               <Button
                 title="Submit Another Review"

@@ -195,10 +195,7 @@ export default function WingmanChatScreen({ navigation }) {
             flatListRef.current?.scrollToEnd({ animated: true })
           }
         />
-        <View
-          style={{ paddingBottom: insets.bottom }}
-          className="border-t border-border bg-surface px-4 py-3"
-        >
+        <View className="border-t border-border bg-surface px-4 py-4">
           <View className="flex-row items-center">
             <TextInput
               className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 mr-2"

@@ -635,6 +635,57 @@ export default function ProfileScreen({ navigation }) {
             </View>
           </View>
 
+          {/* Weekly Insights Section */}
+          <View style={{ marginTop: 8, marginBottom: 24 }}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "600",
+                color: theme.text,
+                marginBottom: 16,
+              }}
+            >
+              Weekly Insights
+            </Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("WeeklyInsights")}
+            >
+              <View className="bg-surface border border-border rounded-xl px-4 py-4">
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1">
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        color: theme.text,
+                        fontWeight: "600",
+                        marginBottom: 4,
+                      }}
+                    >
+                      View My Insights
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        color: theme.textSecondary,
+                      }}
+                    >
+                      Get personalized insights and challenges
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      color: theme.textSecondary,
+                      marginLeft: 12,
+                    }}
+                  >
+                    →
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+
           {/* Sign Out Button */}
           <TouchableOpacity
             onPress={handleSignOut}

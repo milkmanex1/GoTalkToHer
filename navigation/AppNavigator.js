@@ -4,6 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useAuth } from "../context/AuthContext";
 import { theme } from "../src/theme/colors";
+import { getLatestWeeklyInsights } from "../lib/insights";
 import LoginScreen from "../screens/LoginScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
 import HomeScreen from "../screens/HomeScreen";
@@ -16,6 +17,7 @@ import ProfileScreen from "../screens/ProfileScreen";
 import TestScreen from "../screens/TestScreen";
 import SituationSelectScreen from "../screens/SituationSelectScreen";
 import SituationPrepScreen from "../screens/SituationPrepScreen";
+import WeeklyInsightsScreen from "../screens/WeeklyInsightsScreen";
 
 const Stack = createStackNavigator();
 
@@ -25,6 +27,55 @@ export const navigationRef = React.createRef();
 export default function AppNavigator() {
   const { session, profile, ready, loading } = useAuth();
   const isInitialMount = useRef(true);
+  const mondayPromptChecked = useRef(false);
+
+  // Optional: Auto-prompt on Monday if no insights generated this week
+  useEffect(() => {
+    if (!ready || loading || !session || !profile) return;
+
+    // Only check once per app session
+    if (mondayPromptChecked.current) return;
+    mondayPromptChecked.current = true;
+
+    const checkMondayPrompt = async () => {
+      try {
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+        // Only prompt on Monday
+        if (dayOfWeek !== 1) return;
+
+        // Check if insights were generated this week
+        const latestInsight = await getLatestWeeklyInsights(profile.id);
+        if (!latestInsight) {
+          // No insights exist - navigate after a short delay to let Home screen load
+          setTimeout(() => {
+            navigationRef.current?.navigate("WeeklyInsights");
+          }, 1000);
+          return;
+        }
+
+        // Check if insights are older than 7 days
+        const generatedAt = new Date(latestInsight.generatedAt);
+        const daysDiff = (today - generatedAt) / (1000 * 60 * 60 * 24);
+
+        if (daysDiff >= 7) {
+          // Navigate to insights screen
+          setTimeout(() => {
+            navigationRef.current?.navigate("WeeklyInsights");
+          }, 1000);
+        }
+      } catch (error) {
+        // Silently fail - this is optional functionality
+        console.log("Monday prompt check failed:", error);
+      }
+    };
+
+    // Only check if user is logged in and has profile
+    if (session && profile) {
+      checkMondayPrompt();
+    }
+  }, [ready, loading, session, profile]);
 
   // Reset navigation when auth state changes (after initial load)
   useEffect(() => {
@@ -175,6 +226,11 @@ export default function AppNavigator() {
           name="Profile"
           component={ProfileScreen}
           options={{ title: "Your Profile" }}
+        />
+        <Stack.Screen
+          name="WeeklyInsights"
+          component={WeeklyInsightsScreen}
+          options={{ title: "Weekly Insights" }}
         />
       </Stack.Navigator>
     </NavigationContainer>
