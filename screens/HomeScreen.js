@@ -89,11 +89,11 @@ export default function HomeScreen({ navigation }) {
           </Text>
         </View>
 
-        {/* One BIG primary button: Start Approach Timer */}
+        {/* One BIG primary button: Start Situation Mode */}
         <View className="w-full px-6">
           <Button
             title="I wanna talk to her"
-            onPress={() => navigation.navigate("ApproachTimer")}
+            onPress={() => navigation.navigate("SituationSelect")}
             className="w-full"
           />
         </View>

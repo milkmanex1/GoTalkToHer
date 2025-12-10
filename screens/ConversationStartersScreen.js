@@ -9,7 +9,7 @@ import { generateConversationStarter } from "../lib/aiService";
 import { handleError } from "../lib/errorHandler";
 
 const CONVERSATION_STARTERS = {
-  "Friendly Openers": [
+  "Casual Openers": [
     {
       opener:
         "Hey, I noticed you're reading [book/magazine]. I've been meaning to check that out - is it good?",

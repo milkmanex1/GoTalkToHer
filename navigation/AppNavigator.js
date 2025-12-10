@@ -17,6 +17,8 @@ import PostActionReviewScreen from "../screens/PostActionReviewScreen";
 import WingmanChatScreen from "../screens/WingmanChatScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import TestScreen from "../screens/TestScreen";
+import SituationSelectScreen from "../screens/SituationSelectScreen";
+import SituationPrepScreen from "../screens/SituationPrepScreen";
 
 const Stack = createStackNavigator();
 
@@ -131,6 +133,16 @@ export default function AppNavigator() {
             },
             headerTitleAlign: "center",
           })}
+        />
+        <Stack.Screen
+          name="SituationSelect"
+          component={SituationSelectScreen}
+          options={{ title: "Choose Situation" }}
+        />
+        <Stack.Screen
+          name="SituationPrep"
+          component={SituationPrepScreen}
+          options={{ title: "Your Approach Plan" }}
         />
         <Stack.Screen
           name="ApproachTimer"
