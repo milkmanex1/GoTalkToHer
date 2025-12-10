@@ -34,6 +34,7 @@ const MOTIVATIONAL_MESSAGES = [
   "This is how confidence is built.",
   "One moment of courage. That's all.",
   "You've got this",
+  "You’re not supposed to feel ready. Just steady.",
 ];
 
 const TIMER_COUNTDOWN_MESSAGES = [

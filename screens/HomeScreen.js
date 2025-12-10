@@ -65,9 +65,9 @@ export default function HomeScreen({ navigation }) {
       {/* Main centered hero block - vertically centered */}
       <View className="flex-1 items-center justify-center px-6">
         {/* Large heart chat image - marginTop controls image vert position*/}
-        <View style={{ width: 260, height: 260, marginTop: 40 }}>
+        <View style={{ width: 280, height: 280, marginTop: 40 }}>
           <Image
-            source={require("../assets/images/stopwatch_5_photoroom.png")}
+            source={require("../assets/images/woman_4.3.png")}
             style={{ width: "100%", height: "100%", resizeMode: "contain" }}
           />
         </View>
@@ -75,7 +75,7 @@ export default function HomeScreen({ navigation }) {
         {/* Large headline: Random tagline (pink) marginBot controls the button position */}
         <View
           className="items-center"
-          style={{ marginTop: 0, marginBottom: 30 }}
+          style={{ marginTop: 10, marginBottom: 30 }}
         >
           <Text
             style={{
