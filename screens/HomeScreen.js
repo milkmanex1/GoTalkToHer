@@ -54,10 +54,10 @@ export default function HomeScreen({ navigation }) {
         {/* Large heart chat image */}
         <View
           className="mb-6"
-          style={{ width: 200, height: 200, marginTop: 40 }}
+          style={{ width: 250, height: 250, marginTop: 40 }}
         >
           <Image
-            source={require("../assets/images/heart_chat.png")}
+            source={require("../assets/images/stopwatch_2.png")}
             style={{ width: "100%", height: "100%", resizeMode: "contain" }}
           />
         </View>
