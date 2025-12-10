@@ -8,9 +8,11 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import ChatMessage from "../components/ChatMessage";
@@ -20,12 +22,30 @@ import { generatePersonalizedCoaching } from "../lib/aiService";
 import { handleError } from "../lib/errorHandler";
 import { theme } from "../src/theme/colors";
 
+// Arrow Down Icon component
+const ArrowDownIcon = ({ color, size = 24 }) => (
+  <Svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <Path d="M12 5v14" />
+    <Path d="m19 12-7 7-7-7" />
+  </Svg>
+);
+
 export default function WingmanChatScreen({ navigation }) {
   const { profile, session, ready, loading: authLoading } = useAuth();
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [showJumpButton, setShowJumpButton] = useState(false);
   const flatListRef = useRef(null);
   const insets = useSafeAreaInsets();
 
@@ -44,20 +64,26 @@ export default function WingmanChatScreen({ navigation }) {
     }
   }, [ready, profile, session]);
 
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
+
   const loadChatHistory = async () => {
     if (!profile?.id) return;
 
     try {
-      // Load recent chat history using user_id
+      // Load recent chat history using user_id - limit to last 30 messages
       const { data: history } = await supabase
         .from("chat_messages")
         .select("*")
         .eq("user_id", profile.id)
-        .order("timestamp", { ascending: true })
-        .limit(20);
+        .order("timestamp", { ascending: false })
+        .limit(30);
 
       if (history) {
-        const formattedMessages = history.map((msg) => ({
+        // Reverse to show oldest first (ascending order)
+        const formattedMessages = history.reverse().map((msg) => ({
           role: msg.role,
           content: msg.content,
         }));
@@ -96,6 +122,11 @@ export default function WingmanChatScreen({ navigation }) {
     const newUserMessage = { role: "user", content: userMessage };
     setMessages((prev) => [...prev, newUserMessage]);
 
+    // Auto-scroll to bottom
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 50);
+
     try {
       // Save user message to database using user_id
       await supabase.from("chat_messages").insert([
@@ -130,10 +161,10 @@ export default function WingmanChatScreen({ navigation }) {
         },
       ]);
 
-      // Scroll to bottom
+      // Auto-scroll to bottom
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      }, 50);
     } catch (error) {
       handleError(error, "Failed to send message. Please try again.");
       // Remove user message on error
@@ -194,8 +225,46 @@ export default function WingmanChatScreen({ navigation }) {
           onContentSizeChange={() =>
             flatListRef.current?.scrollToEnd({ animated: true })
           }
+          onScroll={(event) => {
+            const { contentOffset, contentSize, layoutMeasurement } =
+              event.nativeEvent;
+
+            // User is scrolling up if they are at least 40px above the bottom
+            const isUserScrollingUp =
+              contentOffset.y <
+              contentSize.height - layoutMeasurement.height - 40;
+
+            setShowJumpButton(isUserScrollingUp);
+          }}
+          scrollEventThrottle={50}
         />
-        <View className="border-t border-border bg-surface px-4 py-4">
+        {/* Floating "Jump to Latest" button */}
+        {showJumpButton && (
+          <TouchableOpacity
+            onPress={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            style={{
+              position: "absolute",
+              bottom: insets.bottom + 150, // ensures it floats above bottom nav
+              right: 4,
+              backgroundColor: "#3d3d3d",
+              width: 24,
+              height: 24,
+              borderRadius: 24,
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 999,
+              elevation: 6,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              padding: 12,
+            }}
+          >
+            <ArrowDownIcon color="#FFFFFF" size={24} />
+          </TouchableOpacity>
+        )}
+        <View className="border-t border-border bg-surface px-4 py-2">
           <View className="flex-row items-center">
             <TextInput
               className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 mr-2"
