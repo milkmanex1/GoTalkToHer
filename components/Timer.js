@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { View, Text, Animated } from "react-native";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
 import * as Haptics from "expo-haptics";
+import { theme } from "../src/theme/colors";
 
 export default function Timer({
   duration,
@@ -94,7 +95,7 @@ export default function Timer({
           cx={svgSize / 2}
           cy={svgSize / 2}
           r={radius}
-          stroke="#2D2F34"
+          stroke={theme.border}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -104,7 +105,7 @@ export default function Timer({
           cx={svgSize / 2}
           cy={svgSize / 2}
           r={radius}
-          stroke="#FF4FA3"
+          stroke={theme.primary}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={circumference}
@@ -127,7 +128,7 @@ export default function Timer({
           style={{
             fontSize: 48,
             fontWeight: "bold",
-            color: "#FF4FA3",
+            color: theme.primary,
           }}
         >
           {remainingTime}

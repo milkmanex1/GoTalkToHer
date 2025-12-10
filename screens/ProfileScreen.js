@@ -13,6 +13,7 @@ import { supabase } from "../lib/supabase";
 import { Storage } from "../lib/storage";
 import BottomNavBar from "../components/BottomNavBar";
 import { getActivityHeatmap } from "../lib/progress";
+import { theme } from "../src/theme/colors";
 
 export default function ProfileScreen({ navigation }) {
   const { profile, session, loading: authLoading, ready } = useAuth();
@@ -71,9 +72,12 @@ export default function ProfileScreen({ navigation }) {
   // Show loading while auth is initializing
   if (!ready || authLoading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        edges={[]}
+      >
         <View className="flex-1 items-center justify-center bg-background">
-          <ActivityIndicator size="large" color="#FF4FA3" />
+          <ActivityIndicator size="large" color={theme.primary} />
           <Text className="text-textSecondary mt-4">Loading...</Text>
         </View>
       </SafeAreaView>
@@ -83,7 +87,10 @@ export default function ProfileScreen({ navigation }) {
   // If no session, redirect to login (shouldn't happen due to navigation guards)
   if (!session) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        edges={[]}
+      >
         <View className="flex-1 items-center justify-center bg-background">
           <Text className="text-textSecondary">Please log in</Text>
         </View>
@@ -94,7 +101,10 @@ export default function ProfileScreen({ navigation }) {
   // If no profile, redirect to onboarding (shouldn't happen due to navigation guards)
   if (!profile) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        edges={[]}
+      >
         <View className="flex-1 items-center justify-center bg-background">
           <Text className="text-textSecondary">Profile not found</Text>
         </View>
@@ -103,7 +113,10 @@ export default function ProfileScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={[]}
+    >
       <ScrollView
         className="flex-1 bg-background"
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
@@ -114,7 +127,7 @@ export default function ProfileScreen({ navigation }) {
             <Text
               style={{
                 fontSize: 16,
-                color: "#A0A0A0",
+                color: theme.textSecondary,
                 marginBottom: 8,
                 textTransform: "uppercase",
                 letterSpacing: 0.5,
@@ -124,7 +137,7 @@ export default function ProfileScreen({ navigation }) {
             </Text>
             <View className="bg-surface border border-border rounded-xl px-4 py-3">
               <Text
-                style={{ fontSize: 18, color: "#FFFFFF", fontWeight: "600" }}
+                style={{ fontSize: 18, color: theme.text, fontWeight: "600" }}
               >
                 {profile.name || "Not set"}
               </Text>
@@ -137,7 +150,7 @@ export default function ProfileScreen({ navigation }) {
               style={{
                 fontSize: 20,
                 fontWeight: "600",
-                color: "#FFFFFF",
+                color: theme.text,
                 marginBottom: 16,
               }}
             >
@@ -152,7 +165,7 @@ export default function ProfileScreen({ navigation }) {
                     <Text
                       style={{
                         fontSize: 16,
-                        color: "#A0A0A0",
+                        color: theme.textSecondary,
                         marginBottom: 4,
                       }}
                     >
@@ -162,7 +175,7 @@ export default function ProfileScreen({ navigation }) {
                       style={{
                         fontSize: 32,
                         fontWeight: "bold",
-                        color: "#4ADE80",
+                        color: theme.success,
                       }}
                     >
                       {profile.past_successes || 0}
@@ -181,7 +194,7 @@ export default function ProfileScreen({ navigation }) {
                     <Text
                       style={{
                         fontSize: 16,
-                        color: "#A0A0A0",
+                        color: theme.textSecondary,
                         marginBottom: 4,
                       }}
                     >
@@ -191,7 +204,7 @@ export default function ProfileScreen({ navigation }) {
                       style={{
                         fontSize: 32,
                         fontWeight: "bold",
-                        color: "#F87171",
+                        color: theme.error,
                       }}
                     >
                       {profile.past_rejections || 0}
@@ -209,7 +222,7 @@ export default function ProfileScreen({ navigation }) {
               style={{
                 fontSize: 20,
                 fontWeight: "600",
-                color: "#FFFFFF",
+                color: theme.text,
                 marginBottom: 16,
               }}
             >
@@ -224,7 +237,7 @@ export default function ProfileScreen({ navigation }) {
                     <Text
                       style={{
                         fontSize: 16,
-                        color: "#A0A0A0",
+                        color: theme.textSecondary,
                         marginBottom: 4,
                       }}
                     >
@@ -234,7 +247,7 @@ export default function ProfileScreen({ navigation }) {
                       style={{
                         fontSize: 32,
                         fontWeight: "bold",
-                        color: "#FF4FA3",
+                        color: theme.primary,
                       }}
                     >
                       {profile.total_approaches || 0}
@@ -252,7 +265,7 @@ export default function ProfileScreen({ navigation }) {
                     <Text
                       style={{
                         fontSize: 16,
-                        color: "#A0A0A0",
+                        color: theme.textSecondary,
                         marginBottom: 4,
                       }}
                     >
@@ -262,7 +275,7 @@ export default function ProfileScreen({ navigation }) {
                       style={{
                         fontSize: 32,
                         fontWeight: "bold",
-                        color: "#FF4FA3",
+                        color: theme.primary,
                       }}
                     >
                       {profile.timer_runs || 0}
@@ -280,7 +293,7 @@ export default function ProfileScreen({ navigation }) {
                     <Text
                       style={{
                         fontSize: 16,
-                        color: "#A0A0A0",
+                        color: theme.textSecondary,
                         marginBottom: 4,
                       }}
                     >
@@ -290,7 +303,7 @@ export default function ProfileScreen({ navigation }) {
                       style={{
                         fontSize: 32,
                         fontWeight: "bold",
-                        color: "#4ADE80",
+                        color: theme.success,
                       }}
                     >
                       {profile.success_rate
@@ -310,7 +323,7 @@ export default function ProfileScreen({ navigation }) {
                     <Text
                       style={{
                         fontSize: 16,
-                        color: "#A0A0A0",
+                        color: theme.textSecondary,
                         marginBottom: 4,
                       }}
                     >
@@ -320,7 +333,7 @@ export default function ProfileScreen({ navigation }) {
                       style={{
                         fontSize: 32,
                         fontWeight: "bold",
-                        color: "#FF4FA3",
+                        color: theme.primary,
                       }}
                     >
                       {profile.current_streak || 0}
@@ -338,7 +351,7 @@ export default function ProfileScreen({ navigation }) {
                     <Text
                       style={{
                         fontSize: 16,
-                        color: "#A0A0A0",
+                        color: theme.textSecondary,
                         marginBottom: 4,
                       }}
                     >
@@ -348,7 +361,7 @@ export default function ProfileScreen({ navigation }) {
                       style={{
                         fontSize: 32,
                         fontWeight: "bold",
-                        color: "#FFD700",
+                        color: theme.warning,
                       }}
                     >
                       {profile.longest_streak || 0}
@@ -363,7 +376,7 @@ export default function ProfileScreen({ navigation }) {
               <Text
                 style={{
                   fontSize: 16,
-                  color: "#A0A0A0",
+                  color: theme.textSecondary,
                   marginBottom: 12,
                 }}
               >
@@ -400,8 +413,8 @@ export default function ProfileScreen({ navigation }) {
                             height: Math.max(height, 4),
                             backgroundColor:
                               day.count > 0
-                                ? "#FF4FA3"
-                                : "rgba(160, 160, 160, 0.2)",
+                                ? theme.primary
+                                : theme.textSecondaryRgba(0.2),
                             borderRadius: 4,
                             marginBottom: 8,
                           }}
@@ -409,7 +422,7 @@ export default function ProfileScreen({ navigation }) {
                         <Text
                           style={{
                             fontSize: 10,
-                            color: "#A0A0A0",
+                            color: theme.textSecondary,
                             marginBottom: 4,
                           }}
                         >
@@ -418,7 +431,7 @@ export default function ProfileScreen({ navigation }) {
                         <Text
                           style={{
                             fontSize: 10,
-                            color: "#A0A0A0",
+                            color: theme.textSecondary,
                           }}
                         >
                           {day.dayName}
@@ -437,7 +450,7 @@ export default function ProfileScreen({ navigation }) {
               style={{
                 fontSize: 20,
                 fontWeight: "600",
-                color: "#FFFFFF",
+                color: theme.text,
                 marginBottom: 16,
               }}
             >
@@ -449,7 +462,7 @@ export default function ProfileScreen({ navigation }) {
               <Text
                 style={{
                   fontSize: 16,
-                  color: "#A0A0A0",
+                  color: theme.textSecondary,
                   marginBottom: 12,
                   textTransform: "uppercase",
                   letterSpacing: 0.5,
@@ -460,7 +473,7 @@ export default function ProfileScreen({ navigation }) {
               <Text
                 style={{
                   fontSize: 14,
-                  color: "#808080",
+                  color: theme.textSecondary,
                   marginBottom: 12,
                 }}
               >
@@ -482,7 +495,7 @@ export default function ProfileScreen({ navigation }) {
                       <Text
                         style={{
                           fontSize: 18,
-                          color: "#FFFFFF",
+                          color: theme.text,
                           fontWeight: "600",
                           marginBottom: 4,
                         }}
@@ -492,7 +505,7 @@ export default function ProfileScreen({ navigation }) {
                       <Text
                         style={{
                           fontSize: 14,
-                          color: "#A0A0A0",
+                          color: theme.textSecondary,
                         }}
                       >
                         5 seconds
@@ -504,12 +517,12 @@ export default function ProfileScreen({ navigation }) {
                           width: 24,
                           height: 24,
                           borderRadius: 12,
-                          backgroundColor: "#FF4FA3",
+                          backgroundColor: theme.primary,
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
-                        <Text style={{ color: "#FFFFFF", fontSize: 16 }}>
+                        <Text style={{ color: theme.text, fontSize: 16 }}>
                           ✓
                         </Text>
                       </View>
@@ -533,7 +546,7 @@ export default function ProfileScreen({ navigation }) {
                       <Text
                         style={{
                           fontSize: 18,
-                          color: "#FFFFFF",
+                          color: theme.text,
                           fontWeight: "600",
                           marginBottom: 4,
                         }}
@@ -543,7 +556,7 @@ export default function ProfileScreen({ navigation }) {
                       <Text
                         style={{
                           fontSize: 14,
-                          color: "#A0A0A0",
+                          color: theme.textSecondary,
                         }}
                       >
                         10 seconds
@@ -555,12 +568,12 @@ export default function ProfileScreen({ navigation }) {
                           width: 24,
                           height: 24,
                           borderRadius: 12,
-                          backgroundColor: "#FF4FA3",
+                          backgroundColor: theme.primary,
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
-                        <Text style={{ color: "#FFFFFF", fontSize: 16 }}>
+                        <Text style={{ color: theme.text, fontSize: 16 }}>
                           ✓
                         </Text>
                       </View>
@@ -584,7 +597,7 @@ export default function ProfileScreen({ navigation }) {
                       <Text
                         style={{
                           fontSize: 18,
-                          color: "#FFFFFF",
+                          color: theme.text,
                           fontWeight: "600",
                           marginBottom: 4,
                         }}
@@ -594,7 +607,7 @@ export default function ProfileScreen({ navigation }) {
                       <Text
                         style={{
                           fontSize: 14,
-                          color: "#A0A0A0",
+                          color: theme.textSecondary,
                         }}
                       >
                         15 seconds
@@ -606,12 +619,12 @@ export default function ProfileScreen({ navigation }) {
                           width: 24,
                           height: 24,
                           borderRadius: 12,
-                          backgroundColor: "#FF4FA3",
+                          backgroundColor: theme.primary,
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
-                        <Text style={{ color: "#FFFFFF", fontSize: 16 }}>
+                        <Text style={{ color: theme.text, fontSize: 16 }}>
                           ✓
                         </Text>
                       </View>
@@ -627,7 +640,9 @@ export default function ProfileScreen({ navigation }) {
             onPress={handleSignOut}
             className="bg-surface border border-red-500 rounded-xl px-4 py-4 items-center mt-8"
           >
-            <Text style={{ fontSize: 16, color: "#F87171", fontWeight: "600" }}>
+            <Text
+              style={{ fontSize: 16, color: theme.error, fontWeight: "600" }}
+            >
               Sign Out
             </Text>
           </TouchableOpacity>

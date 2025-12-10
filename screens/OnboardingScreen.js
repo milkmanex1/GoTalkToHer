@@ -16,6 +16,7 @@ import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
 import { handleError } from "../lib/errorHandler";
+import { theme } from "../src/theme/colors";
 
 const CHALLENGES = [
   "Fear of rejection",
@@ -77,7 +78,10 @@ export default function OnboardingScreen({ navigation }) {
         // If insert fails, check if profile already exists
         if (error.code === "23505") {
           // Unique constraint violation - profile already exists
-          Alert.alert("Error", "Profile already exists. Redirecting to home...");
+          Alert.alert(
+            "Error",
+            "Profile already exists. Redirecting to home..."
+          );
           // Refresh profile to load existing one
           await refresh();
           navigation.replace("Home");
@@ -102,7 +106,10 @@ export default function OnboardingScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={[]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -122,7 +129,7 @@ export default function OnboardingScreen({ navigation }) {
               style={{
                 fontSize: 28,
                 fontWeight: "bold",
-                color: "#FFFFFF",
+                color: theme.text,
                 marginBottom: 16,
                 textAlign: "center",
                 lineHeight: 36.4,
@@ -134,7 +141,7 @@ export default function OnboardingScreen({ navigation }) {
             <Text
               style={{
                 fontSize: 16,
-                color: "#D0D0D0",
+                color: theme.textSecondary,
                 marginBottom: 48,
                 textAlign: "center",
                 lineHeight: 22.4,
@@ -151,7 +158,7 @@ export default function OnboardingScreen({ navigation }) {
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                 }}
               >
@@ -159,9 +166,9 @@ export default function OnboardingScreen({ navigation }) {
               </Text>
               <TextInput
                 className="bg-surface border border-border rounded-xl px-4 py-3"
-                style={{ fontSize: 16, color: "#FFFFFF" }}
+                style={{ fontSize: 16, color: theme.text }}
                 placeholder="Enter your name"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={theme.textSecondary}
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
@@ -173,7 +180,7 @@ export default function OnboardingScreen({ navigation }) {
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                 }}
               >
@@ -183,7 +190,7 @@ export default function OnboardingScreen({ navigation }) {
                 <Picker
                   selectedValue={ageRange}
                   onValueChange={setAgeRange}
-                  style={{ color: "#FFFFFF" }}
+                  style={{ color: theme.text }}
                 >
                   {AGE_RANGES.map((range) => (
                     <Picker.Item key={range} label={range} value={range} />
@@ -197,14 +204,16 @@ export default function OnboardingScreen({ navigation }) {
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                 }}
               >
                 Confidence Level: {confidenceLevel}/10
               </Text>
               <View className="flex-row items-center justify-between">
-                <Text style={{ fontSize: 13, color: "#A0A0A0" }}>Low</Text>
+                <Text style={{ fontSize: 13, color: theme.textSecondary }}>
+                  Low
+                </Text>
                 <View className="flex-1 mx-4">
                   <View className="flex-row">
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
@@ -218,7 +227,9 @@ export default function OnboardingScreen({ navigation }) {
                     ))}
                   </View>
                 </View>
-                <Text style={{ fontSize: 13, color: "#A0A0A0" }}>High</Text>
+                <Text style={{ fontSize: 13, color: theme.textSecondary }}>
+                  High
+                </Text>
               </View>
             </View>
 
@@ -227,7 +238,7 @@ export default function OnboardingScreen({ navigation }) {
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                 }}
               >
@@ -237,7 +248,7 @@ export default function OnboardingScreen({ navigation }) {
                 <Picker
                   selectedValue={biggestChallenge}
                   onValueChange={setBiggestChallenge}
-                  style={{ color: "#FFFFFF" }}
+                  style={{ color: theme.text }}
                 >
                   {CHALLENGES.map((challenge) => (
                     <Picker.Item

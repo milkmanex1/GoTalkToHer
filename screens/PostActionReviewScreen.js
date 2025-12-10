@@ -20,6 +20,7 @@ import { supabase } from "../lib/supabase";
 import { processPostActionReview } from "../lib/aiService";
 import { handleError } from "../lib/errorHandler";
 import { updateProgress } from "../lib/progress";
+import { theme } from "../src/theme/colors";
 
 const OUTCOMES = [
   { id: "did_not_approach", label: "Did not approach" },
@@ -159,9 +160,12 @@ export default function PostActionReviewScreen({ navigation }) {
 
   if (!ready || authLoading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        edges={[]}
+      >
         <View className="flex-1 items-center justify-center bg-background">
-          <ActivityIndicator size="large" color="#FF4FA3" />
+          <ActivityIndicator size="large" color={theme.primary} />
           <Text className="text-textSecondary mt-4">Loading...</Text>
         </View>
       </SafeAreaView>
@@ -170,7 +174,10 @@ export default function PostActionReviewScreen({ navigation }) {
 
   if (!profile || !session) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        edges={[]}
+      >
         <View className="flex-1 items-center justify-center bg-background">
           <Text className="text-textSecondary">Please log in</Text>
         </View>
@@ -180,7 +187,10 @@ export default function PostActionReviewScreen({ navigation }) {
 
   if (submitted && aiFeedback) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        edges={[]}
+      >
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -195,15 +205,15 @@ export default function PostActionReviewScreen({ navigation }) {
               <Card
                 className="mb-6"
                 style={{
-                  backgroundColor: "rgba(255, 79, 163, 0.1)",
-                  borderColor: "#FF4FA3",
+                  backgroundColor: theme.primaryRgba(0.1),
+                  borderColor: theme.primary,
                 }}
               >
                 <Text
                   style={{
                     fontSize: 26,
                     fontWeight: "bold",
-                    color: "#FF4FA3",
+                    color: theme.primary,
                     marginBottom: 16,
                     textAlign: "center",
                     lineHeight: 33.8,
@@ -215,14 +225,14 @@ export default function PostActionReviewScreen({ navigation }) {
                   style={{
                     fontSize: 20,
                     fontWeight: "600",
-                    color: "#FFFFFF",
+                    color: theme.text,
                     marginBottom: 12,
                   }}
                 >
                   AI Feedback:
                 </Text>
                 <Text
-                  style={{ fontSize: 16, color: "#FFFFFF", lineHeight: 24 }}
+                  style={{ fontSize: 16, color: theme.text, lineHeight: 24 }}
                 >
                   {aiFeedback}
                 </Text>
@@ -245,7 +255,10 @@ export default function PostActionReviewScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={[]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -261,7 +274,7 @@ export default function PostActionReviewScreen({ navigation }) {
               style={{
                 fontSize: 24,
                 fontWeight: "600",
-                color: "#FF4FA3",
+                color: theme.primary,
                 marginBottom: 24,
               }}
             >
@@ -273,7 +286,7 @@ export default function PostActionReviewScreen({ navigation }) {
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                 }}
               >
@@ -292,7 +305,7 @@ export default function PostActionReviewScreen({ navigation }) {
                     }`}
                     style={
                       selectedOutcome === outcome.id
-                        ? { backgroundColor: "rgba(255, 79, 163, 0.1)" }
+                        ? { backgroundColor: theme.primaryRgba(0.1) }
                         : {}
                     }
                   >
@@ -303,8 +316,8 @@ export default function PostActionReviewScreen({ navigation }) {
                           selectedOutcome === outcome.id ? "600" : "400",
                         color:
                           selectedOutcome === outcome.id
-                            ? "#FF4FA3"
-                            : "#FFFFFF",
+                            ? theme.primary
+                            : theme.text,
                       }}
                     >
                       {outcome.label}
@@ -327,7 +340,7 @@ export default function PostActionReviewScreen({ navigation }) {
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                 }}
               >
@@ -337,11 +350,11 @@ export default function PostActionReviewScreen({ navigation }) {
                 className="bg-surface border border-border rounded-xl px-4 py-3 min-h-[100px]"
                 style={{
                   fontSize: 16,
-                  color: "#FFFFFF",
+                  color: theme.text,
                   textAlignVertical: "top",
                 }}
                 placeholder="Describe what happened..."
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={theme.textSecondary}
                 value={whatHappened}
                 onChangeText={setWhatHappened}
                 multiline
@@ -354,7 +367,7 @@ export default function PostActionReviewScreen({ navigation }) {
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                 }}
               >
@@ -364,11 +377,11 @@ export default function PostActionReviewScreen({ navigation }) {
                 className="bg-surface border border-border rounded-xl px-4 py-3 min-h-[100px]"
                 style={{
                   fontSize: 16,
-                  color: "#FFFFFF",
+                  color: theme.text,
                   textAlignVertical: "top",
                 }}
                 placeholder="Share your feelings..."
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={theme.textSecondary}
                 value={howTheyFelt}
                 onChangeText={setHowTheyFelt}
                 multiline

@@ -4,9 +4,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path, Rect, Circle } from "react-native-svg";
 import Card from "../components/Card";
 import BottomNavBar from "../components/BottomNavBar";
+import { theme } from "../src/theme/colors";
 
 // Icon components
-const CoffeeIcon = ({ color = "#FFFFFF", size = 24 }) => (
+const CoffeeIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -24,7 +25,7 @@ const CoffeeIcon = ({ color = "#FFFFFF", size = 24 }) => (
   </Svg>
 );
 
-const DumbbellIcon = ({ color = "#FFFFFF", size = 24 }) => (
+const DumbbellIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -43,7 +44,7 @@ const DumbbellIcon = ({ color = "#FFFFFF", size = 24 }) => (
   </Svg>
 );
 
-const HandbagIcon = ({ color = "#FFFFFF", size = 24 }) => (
+const HandbagIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -59,7 +60,7 @@ const HandbagIcon = ({ color = "#FFFFFF", size = 24 }) => (
   </Svg>
 );
 
-const FootprintsIcon = ({ color = "#FFFFFF", size = 24 }) => (
+const FootprintsIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -77,7 +78,7 @@ const FootprintsIcon = ({ color = "#FFFFFF", size = 24 }) => (
   </Svg>
 );
 
-const BeerIcon = ({ color = "#FFFFFF", size = 24 }) => (
+const BeerIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -96,7 +97,7 @@ const BeerIcon = ({ color = "#FFFFFF", size = 24 }) => (
   </Svg>
 );
 
-const LibraryIcon = ({ color = "#FFFFFF", size = 24 }) => (
+const LibraryIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -113,7 +114,7 @@ const LibraryIcon = ({ color = "#FFFFFF", size = 24 }) => (
   </Svg>
 );
 
-const BusIcon = ({ color = "#FFFFFF", size = 24 }) => (
+const BusIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -150,7 +151,10 @@ export default function SituationSelectScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={[]}
+    >
       <ScrollView
         className="flex-1 bg-background"
         contentContainerStyle={{ paddingBottom: 20 }}
@@ -162,7 +166,7 @@ export default function SituationSelectScreen({ navigation }) {
               style={{
                 fontSize: 28,
                 fontWeight: "bold",
-                color: "#FFFFFF",
+                color: theme.text,
                 marginBottom: 8,
               }}
             >
@@ -171,7 +175,7 @@ export default function SituationSelectScreen({ navigation }) {
             <Text
               style={{
                 fontSize: 16,
-                color: "#A0A0A0",
+                color: theme.textSecondary,
                 lineHeight: 22.4,
               }}
             >
@@ -191,19 +195,21 @@ export default function SituationSelectScreen({ navigation }) {
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center flex-1">
                     <View style={{ marginRight: 16 }}>
-                      <IconComponent color="#FFFFFF" size={28} />
+                      <IconComponent color={theme.text} size={28} />
                     </View>
                     <Text
                       style={{
                         fontSize: 18,
                         fontWeight: "600",
-                        color: "#FFFFFF",
+                        color: theme.text,
                       }}
                     >
                       {situation.label}
                     </Text>
                   </View>
-                  <Text style={{ fontSize: 18, color: "#A0A0A0" }}>›</Text>
+                  <Text style={{ fontSize: 18, color: theme.textSecondary }}>
+                    ›
+                  </Text>
                 </View>
               </Card>
             );
@@ -211,11 +217,7 @@ export default function SituationSelectScreen({ navigation }) {
         </View>
       </ScrollView>
       {/* Bottom navigation bar */}
-      <BottomNavBar
-        navigation={navigation}
-        currentRoute="SituationSelect"
-      />
+      <BottomNavBar navigation={navigation} currentRoute="SituationSelect" />
     </SafeAreaView>
   );
 }
-

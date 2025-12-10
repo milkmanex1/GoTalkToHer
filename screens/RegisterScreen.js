@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
 import { handleError } from "../lib/errorHandler";
+import { theme } from "../src/theme/colors";
 
 export default function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -95,148 +96,153 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={[]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={[]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-        <ScrollView 
+        <ScrollView
           className="flex-1 bg-background"
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 20 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: insets.bottom + 20,
+          }}
           keyboardShouldPersistTaps="handled"
         >
-        <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
-        {/* Large Title */}
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: "bold",
-            color: "#FFFFFF",
-            marginBottom: 16,
-            textAlign: "center",
-            lineHeight: 36.4,
-          }}
-        >
-          Create Account
-        </Text>
-        <Text
-          style={{
-            fontSize: 16,
-            color: "#D0D0D0",
-            marginBottom: 48,
-            textAlign: "center",
-            lineHeight: 22.4,
-          }}
-        >
-          Sign up to get started on your journey
-        </Text>
-
-        {/* Email Input */}
-        <View style={{ marginBottom: 24 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "600",
-              color: "#FFFFFF",
-              marginBottom: 12,
-            }}
-          >
-            Email
-          </Text>
-          <TextInput
-            className="bg-surface border border-border rounded-xl px-4 py-3"
-            style={{ fontSize: 16, color: "#FFFFFF" }}
-            placeholder="Enter your email"
-            placeholderTextColor="#A0A0A0"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-          />
-        </View>
-
-        {/* Password Input */}
-        <View style={{ marginBottom: 24 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "600",
-              color: "#FFFFFF",
-              marginBottom: 12,
-            }}
-          >
-            Password
-          </Text>
-          <TextInput
-            className="bg-surface border border-border rounded-xl px-4 py-3"
-            style={{ fontSize: 16, color: "#FFFFFF" }}
-            placeholder="Enter your password (min 6 characters)"
-            placeholderTextColor="#A0A0A0"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoComplete="password-new"
-          />
-        </View>
-
-        {/* Confirm Password Input */}
-        <View style={{ marginBottom: 24 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "600",
-              color: "#FFFFFF",
-              marginBottom: 12,
-            }}
-          >
-            Confirm Password
-          </Text>
-          <TextInput
-            className="bg-surface border border-border rounded-xl px-4 py-3"
-            style={{ fontSize: 16, color: "#FFFFFF" }}
-            placeholder="Confirm your password"
-            placeholderTextColor="#A0A0A0"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoComplete="password-new"
-          />
-        </View>
-
-        {/* Register Button */}
-        <Button
-          title={loading ? "Creating account..." : "Sign Up"}
-          onPress={handleRegister}
-          disabled={loading}
-          loading={loading}
-          className="w-full mb-6"
-        />
-
-        {/* Login Link */}
-        <View className="flex-row justify-center items-center">
-          <Text style={{ fontSize: 16, color: "#D0D0D0" }}>
-            Already have an account?{" "}
-          </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <View style={{ paddingHorizontal: 24, paddingVertical: 48 }}>
+            {/* Large Title */}
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: "bold",
+                color: theme.text,
+                marginBottom: 16,
+                textAlign: "center",
+                lineHeight: 36.4,
+              }}
+            >
+              Create Account
+            </Text>
             <Text
               style={{
                 fontSize: 16,
-                color: "#FF4FA3",
-                fontWeight: "600",
+                color: theme.textSecondary,
+                marginBottom: 48,
+                textAlign: "center",
+                lineHeight: 22.4,
               }}
             >
-              Sign In
+              Sign up to get started on your journey
             </Text>
-          </TouchableOpacity>
-        </View>
-        </View>
+
+            {/* Email Input */}
+            <View style={{ marginBottom: 24 }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: theme.text,
+                  marginBottom: 12,
+                }}
+              >
+                Email
+              </Text>
+              <TextInput
+                className="bg-surface border border-border rounded-xl px-4 py-3"
+                style={{ fontSize: 16, color: theme.text }}
+                placeholder="Enter your email"
+                placeholderTextColor={theme.textSecondary}
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
+              />
+            </View>
+
+            {/* Password Input */}
+            <View style={{ marginBottom: 24 }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: theme.text,
+                  marginBottom: 12,
+                }}
+              >
+                Password
+              </Text>
+              <TextInput
+                className="bg-surface border border-border rounded-xl px-4 py-3"
+                style={{ fontSize: 16, color: theme.text }}
+                placeholder="Enter your password (min 6 characters)"
+                placeholderTextColor={theme.textSecondary}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoComplete="password-new"
+              />
+            </View>
+
+            {/* Confirm Password Input */}
+            <View style={{ marginBottom: 24 }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: theme.text,
+                  marginBottom: 12,
+                }}
+              >
+                Confirm Password
+              </Text>
+              <TextInput
+                className="bg-surface border border-border rounded-xl px-4 py-3"
+                style={{ fontSize: 16, color: theme.text }}
+                placeholder="Confirm your password"
+                placeholderTextColor={theme.textSecondary}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoComplete="password-new"
+              />
+            </View>
+
+            {/* Register Button */}
+            <Button
+              title={loading ? "Creating account..." : "Sign Up"}
+              onPress={handleRegister}
+              disabled={loading}
+              loading={loading}
+              className="w-full mb-6"
+            />
+
+            {/* Login Link */}
+            <View className="flex-row justify-center items-center">
+              <Text style={{ fontSize: 16, color: theme.textSecondary }}>
+                Already have an account?{" "}
+              </Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: theme.primary,
+                    fontWeight: "600",
+                  }}
+                >
+                  Sign In
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-

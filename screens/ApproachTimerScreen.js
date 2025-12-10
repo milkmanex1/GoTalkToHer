@@ -20,6 +20,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { updateProgress } from "../lib/progress";
 import { Storage } from "../lib/storage";
+import { theme } from "../src/theme/colors";
 
 const { width, height } = Dimensions.get("window");
 
@@ -214,9 +215,12 @@ export default function ApproachTimerScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={[]}
+    >
       <LinearGradient
-        colors={["#181C24", "#101014", "#000000"]}
+        colors={[theme.surface, theme.background, theme.background]}
         locations={[0, 0.5, 1]}
         style={styles.container}
       >
@@ -250,12 +254,15 @@ export default function ApproachTimerScreen({ navigation }) {
 
         {!isActive && !timerComplete && (
           <View className="flex-1 items-center justify-center px-6">
-            <View className="mb-12 items-center justify-center">
+            <View
+              className="items-center justify-center"
+              style={{ marginTop: -50, marginBottom: 8 }}
+            >
               <Image
-                source={require("../assets/images/stopwatch.png")}
+                source={require("../assets/images/stopwatch_5_photoroom.png")}
                 style={{
-                  width: 200,
-                  height: 200,
+                  width: 240,
+                  height: 240,
                   resizeMode: "contain",
                 }}
               />
@@ -266,7 +273,7 @@ export default function ApproachTimerScreen({ navigation }) {
                 style={{
                   fontSize: 22,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                   textAlign: "center",
                 }}
@@ -276,7 +283,7 @@ export default function ApproachTimerScreen({ navigation }) {
               <Text
                 style={{
                   fontSize: 16,
-                  color: "#D0D0D0",
+                  color: theme.textSecondary,
                   textAlign: "center",
                   paddingHorizontal: 16,
                   lineHeight: 22.4,
@@ -289,7 +296,7 @@ export default function ApproachTimerScreen({ navigation }) {
               <Text
                 style={{
                   fontSize: 14,
-                  color: "#A0A0A0",
+                  color: theme.textSecondary,
                   textAlign: "center",
                   paddingHorizontal: 16,
                   lineHeight: 20,
@@ -379,9 +386,9 @@ export default function ApproachTimerScreen({ navigation }) {
                   style={{
                     fontSize: 44,
                     fontWeight: "bold",
-                    color: "#FF4FA3",
+                    color: theme.primary,
                     textAlign: "center",
-                    paddingTop: 28,
+                    paddingTop: 12,
                     paddingBottom: 18,
                     lineHeight: 57.2,
                   }}
@@ -392,7 +399,7 @@ export default function ApproachTimerScreen({ navigation }) {
                 <Text
                   style={{
                     fontSize: 18,
-                    color: "#D0D0D0",
+                    color: theme.textSecondary,
                     textAlign: "center",
                     lineHeight: 25.2,
                     marginBottom: 40,
@@ -465,7 +472,7 @@ const styles = StyleSheet.create({
   },
   bottomText: {
     fontSize: 16,
-    color: "#FFFFFF",
+    color: theme.text,
     opacity: 0.9,
     textAlign: "center",
     lineHeight: 22.4,
@@ -480,13 +487,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 999,
     borderWidth: 1.5,
-    borderColor: "#FF4FA3",
+    borderColor: theme.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   cancelButtonText: {
     fontSize: 15,
-    color: "#FF4FA3",
+    color: theme.primary,
     fontWeight: "500",
   },
   completeContainer: {
@@ -494,30 +501,30 @@ const styles = StyleSheet.create({
   },
   flashOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#FF4FA3",
+    backgroundColor: theme.primary,
     zIndex: 10,
   },
   approachedButton: {
     width: "67.5%",
     height: 44,
-    backgroundColor: "rgba(255,79,163,0.08)",
+    backgroundColor: theme.primaryRgba(0.08),
     borderRadius: 999,
     borderWidth: 1.5,
-    borderColor: "#FF4FA3",
+    borderColor: theme.primary,
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "center",
     marginTop: 42,
   },
   approachedButtonText: {
-    color: "#FF4FA3",
+    color: theme.primary,
     fontSize: 16,
     fontWeight: "500",
   },
   tryAgainLink: {
     marginTop: 15,
     textAlign: "center",
-    color: "#A0A0A0",
+    color: theme.textSecondary,
     fontSize: 14,
     textDecorationLine: "underline",
   },

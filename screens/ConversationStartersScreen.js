@@ -7,6 +7,7 @@ import BottomNavBar from "../components/BottomNavBar";
 import { supabase } from "../lib/supabase";
 import { generateConversationStarter } from "../lib/aiService";
 import { handleError } from "../lib/errorHandler";
+import { theme } from "../src/theme/colors";
 
 const CONVERSATION_STARTERS = {
   "Casual Openers": [
@@ -162,7 +163,10 @@ export default function ConversationStartersScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0F12" }} edges={[]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={[]}
+    >
       <ScrollView
         className="flex-1 bg-background"
         contentContainerStyle={{ paddingBottom: 20 }}
@@ -181,22 +185,22 @@ export default function ConversationStartersScreen({ navigation }) {
             <Card
               className="mb-6"
               style={{
-                backgroundColor: "rgba(255, 79, 163, 0.1)",
-                borderColor: "#FF4FA3",
+                backgroundColor: theme.primaryRgba(0.1),
+                borderColor: theme.primary,
               }}
             >
               <Text
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                 }}
               >
                 AI-Generated Opener
               </Text>
               <Text
-                style={{ fontSize: 16, color: "#FFFFFF", lineHeight: 24.4 }}
+                style={{ fontSize: 16, color: theme.text, lineHeight: 24.4 }}
               >
                 {aiGenerated}
               </Text>
@@ -218,12 +222,12 @@ export default function ConversationStartersScreen({ navigation }) {
                       style={{
                         fontSize: 22,
                         fontWeight: "600",
-                        color: "#FFFFFF",
+                        color: theme.text,
                       }}
                     >
                       {category}
                     </Text>
-                    <Text style={{ fontSize: 18, color: "#FFFFFF" }}>
+                    <Text style={{ fontSize: 18, color: theme.text }}>
                       {expandedCategory === category ? "▼" : "▶"}
                     </Text>
                   </View>
@@ -249,14 +253,19 @@ export default function ConversationStartersScreen({ navigation }) {
                               style={{
                                 fontSize: 16,
                                 fontWeight: "500",
-                                color: "#FFFFFF",
+                                color: theme.text,
                                 marginBottom: 8,
                                 lineHeight: 24,
                               }}
                             >
                               "{starter.opener}"
                             </Text>
-                            <Text style={{ fontSize: 13, color: "#A0A0A0" }}>
+                            <Text
+                              style={{
+                                fontSize: 13,
+                                color: theme.textSecondary,
+                              }}
+                            >
                               Tap to see details →
                             </Text>
                             {expandedStarter === `${category}-${index}` && (

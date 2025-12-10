@@ -10,13 +10,14 @@ import {
 import { AuthProvider } from "./context/AuthContext";
 import AppNavigator from "./navigation/AppNavigator";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { theme } from "./src/theme/colors";
 import "./global.css";
 
 export default function App() {
   useEffect(() => {
-    // Set Android navigation bar color to black
+    // Set Android navigation bar color to theme background
     if (Platform.OS === "android") {
-      NavigationBar.setBackgroundColorAsync("#000000");
+      NavigationBar.setBackgroundColorAsync(theme.background);
     }
 
     // Register for push notifications (fail silently if not available)

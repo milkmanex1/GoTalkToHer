@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "../components/Button";
 import { supabase } from "../lib/supabase";
 import { handleError } from "../lib/errorHandler";
+import { theme } from "../src/theme/colors";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -54,7 +55,10 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={[]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={[]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -74,7 +78,7 @@ export default function LoginScreen({ navigation }) {
               style={{
                 fontSize: 28,
                 fontWeight: "bold",
-                color: "#FFFFFF",
+                color: theme.text,
                 marginBottom: 16,
                 textAlign: "center",
                 lineHeight: 36.4,
@@ -85,7 +89,7 @@ export default function LoginScreen({ navigation }) {
             <Text
               style={{
                 fontSize: 16,
-                color: "#D0D0D0",
+                color: theme.textSecondary,
                 marginBottom: 48,
                 textAlign: "center",
                 lineHeight: 22.4,
@@ -98,8 +102,8 @@ export default function LoginScreen({ navigation }) {
             {success && (
               <View
                 style={{
-                  backgroundColor: "rgba(34, 197, 94, 0.1)",
-                  borderColor: "#22C55E",
+                  backgroundColor: theme.successRgba(0.1),
+                  borderColor: theme.success,
                   borderWidth: 1,
                   borderRadius: 12,
                   padding: 16,
@@ -109,7 +113,7 @@ export default function LoginScreen({ navigation }) {
                 <Text
                   style={{
                     fontSize: 16,
-                    color: "#22C55E",
+                    color: theme.success,
                     textAlign: "center",
                     fontWeight: "600",
                   }}
@@ -125,7 +129,7 @@ export default function LoginScreen({ navigation }) {
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
-                  color: "#FFFFFF",
+                  color: theme.text,
                   marginBottom: 12,
                 }}
               >
@@ -133,9 +137,9 @@ export default function LoginScreen({ navigation }) {
               </Text>
               <TextInput
                 className="bg-surface border border-border rounded-xl px-4 py-3"
-                style={{ fontSize: 16, color: "#FFFFFF" }}
+                style={{ fontSize: 16, color: theme.text }}
                 placeholder="Enter your email"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={theme.textSecondary}
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);

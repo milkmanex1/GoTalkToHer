@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React from "react";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { theme } from "../src/theme/colors";
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -12,7 +13,7 @@ export class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    console.error("Error caught by boundary:", error, errorInfo);
     this.setState({
       error: error.toString(),
       errorInfo: errorInfo.componentStack,
@@ -28,17 +29,25 @@ export class ErrorBoundary extends React.Component {
               Something went wrong
             </Text>
             <Text className="text-base text-textSecondary mb-6 text-center">
-              {this.state.error || 'An unexpected error occurred'}
+              {this.state.error || "An unexpected error occurred"}
             </Text>
             {this.state.errorInfo && (
               <ScrollView className="bg-surface border border-border p-4 rounded-lg mb-6 max-h-48">
-                <Text style={{ fontSize: 12, color: '#A0A0A0', fontFamily: 'monospace' }}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: theme.textSecondary,
+                    fontFamily: "monospace",
+                  }}
+                >
                   {this.state.errorInfo}
                 </Text>
               </ScrollView>
             )}
             <TouchableOpacity
-              onPress={() => this.setState({ hasError: false, error: null, errorInfo: null })}
+              onPress={() =>
+                this.setState({ hasError: false, error: null, errorInfo: null })
+              }
               className="bg-primary px-6 py-3 rounded-xl"
             >
               <Text className="text-white font-semibold">Try Again</Text>
@@ -51,4 +60,3 @@ export class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
-

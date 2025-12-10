@@ -1,20 +1,21 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React from "react";
+import { View, Text } from "react-native";
+import { theme } from "../src/theme/colors";
 
 export default function ChatMessage({ message, isUser = false }) {
   return (
-    <View className={`mb-4 ${isUser ? 'items-end' : 'items-start'}`}>
+    <View className={`mb-4 ${isUser ? "items-end" : "items-start"}`}>
       <View
         className={`max-w-[80%] rounded-2xl px-4 py-3 ${
           isUser
-            ? 'bg-primary rounded-br-sm'
-            : 'bg-surface border border-border rounded-bl-sm'
+            ? "bg-primary rounded-br-sm"
+            : "bg-surface border border-border rounded-bl-sm"
         }`}
       >
         <Text
           style={{
             fontSize: 16,
-            color: isUser ? '#FFFFFF' : '#FFFFFF',
+            color: theme.text,
             lineHeight: 22.4,
           }}
         >
@@ -24,4 +25,3 @@ export default function ChatMessage({ message, isUser = false }) {
     </View>
   );
 }
-

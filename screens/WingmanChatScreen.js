@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,21 +8,22 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../context/AuthContext';
-import Button from '../components/Button';
-import ChatMessage from '../components/ChatMessage';
-import BottomNavBar from '../components/BottomNavBar';
-import { supabase } from '../lib/supabase';
-import { generatePersonalizedCoaching } from '../lib/aiService';
-import { handleError } from '../lib/errorHandler';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../context/AuthContext";
+import Button from "../components/Button";
+import ChatMessage from "../components/ChatMessage";
+import BottomNavBar from "../components/BottomNavBar";
+import { supabase } from "../lib/supabase";
+import { generatePersonalizedCoaching } from "../lib/aiService";
+import { handleError } from "../lib/errorHandler";
+import { theme } from "../src/theme/colors";
 
 export default function WingmanChatScreen({ navigation }) {
   const { profile, session, ready, loading: authLoading } = useAuth();
   const [messages, setMessages] = useState([]);
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const flatListRef = useRef(null);
@@ -32,11 +33,14 @@ export default function WingmanChatScreen({ navigation }) {
     if (ready && profile && session) {
       loadChatHistory();
     } else if (ready && !session) {
-      Alert.alert('Error', 'You must be logged in to use the chat');
+      Alert.alert("Error", "You must be logged in to use the chat");
       navigation.goBack();
     } else if (ready && session && !profile) {
-      Alert.alert('Error', 'Profile not found. Please complete onboarding first.');
-      navigation.replace('Onboarding');
+      Alert.alert(
+        "Error",
+        "Profile not found. Please complete onboarding first."
+      );
+      navigation.replace("Onboarding");
     }
   }, [ready, profile, session]);
 
@@ -46,10 +50,10 @@ export default function WingmanChatScreen({ navigation }) {
     try {
       // Load recent chat history using user_id
       const { data: history } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .eq('user_id', profile.id)
-        .order('timestamp', { ascending: true })
+        .from("chat_messages")
+        .select("*")
+        .eq("user_id", profile.id)
+        .order("timestamp", { ascending: true })
         .limit(20);
 
       if (history) {
@@ -64,14 +68,14 @@ export default function WingmanChatScreen({ navigation }) {
       if (!history || history.length === 0) {
         setMessages([
           {
-            role: 'assistant',
+            role: "assistant",
             content:
               "Hey! I'm your Wingman AI coach. I'm here to help you build confidence and overcome approach anxiety. What's on your mind?",
           },
         ]);
       }
     } catch (error) {
-      console.error('Error loading chat:', error);
+      console.error("Error loading chat:", error);
     } finally {
       setLoadingHistory(false);
     }
@@ -80,24 +84,24 @@ export default function WingmanChatScreen({ navigation }) {
   const handleSend = async () => {
     if (!inputText.trim() || loading) return;
     if (!profile || !session) {
-      Alert.alert('Error', 'You must be logged in to send messages');
+      Alert.alert("Error", "You must be logged in to send messages");
       return;
     }
 
     const userMessage = inputText.trim();
-    setInputText('');
+    setInputText("");
     setLoading(true);
 
     // Add user message to UI immediately
-    const newUserMessage = { role: 'user', content: userMessage };
+    const newUserMessage = { role: "user", content: userMessage };
     setMessages((prev) => [...prev, newUserMessage]);
 
     try {
       // Save user message to database using user_id
-      await supabase.from('chat_messages').insert([
+      await supabase.from("chat_messages").insert([
         {
           user_id: profile.id,
-          role: 'user',
+          role: "user",
           content: userMessage,
         },
       ]);
@@ -114,14 +118,14 @@ export default function WingmanChatScreen({ navigation }) {
         chatHistory
       );
 
-      const assistantMessage = { role: 'assistant', content: aiResponse };
+      const assistantMessage = { role: "assistant", content: aiResponse };
       setMessages((prev) => [...prev, assistantMessage]);
 
       // Save AI response to database using user_id
-      await supabase.from('chat_messages').insert([
+      await supabase.from("chat_messages").insert([
         {
           user_id: profile.id,
-          role: 'assistant',
+          role: "assistant",
           content: aiResponse,
         },
       ]);
@@ -131,7 +135,7 @@ export default function WingmanChatScreen({ navigation }) {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
     } catch (error) {
-      handleError(error, 'Failed to send message. Please try again.');
+      handleError(error, "Failed to send message. Please try again.");
       // Remove user message on error
       setMessages((prev) => prev.slice(0, -1));
     } finally {
@@ -141,10 +145,15 @@ export default function WingmanChatScreen({ navigation }) {
 
   if (!ready || authLoading || loadingHistory) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={[]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        edges={[]}
+      >
         <View className="flex-1 items-center justify-center bg-background">
-          <ActivityIndicator size="large" color="#FF4FA3" />
-          <Text style={{ color: '#A0A0A0', marginTop: 16 }}>Loading chat...</Text>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={{ color: theme.textSecondary, marginTop: 16 }}>
+            Loading chat...
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -152,59 +161,67 @@ export default function WingmanChatScreen({ navigation }) {
 
   if (!profile || !session) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={[]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        edges={[]}
+      >
         <View className="flex-1 items-center justify-center bg-background">
-          <Text style={{ color: '#A0A0A0' }}>Please log in</Text>
+          <Text style={{ color: theme.textSecondary }}>Please log in</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0F12' }} edges={[]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={[]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        keyExtractor={(item, index) => `message-${index}`}
-        renderItem={({ item }) => (
-          <ChatMessage message={item.content} isUser={item.role === 'user'} />
-        )}
-        contentContainerStyle={{ flexGrow: 1, padding: 24 }}
-        keyboardShouldPersistTaps="handled"
-        onContentSizeChange={() =>
-          flatListRef.current?.scrollToEnd({ animated: true })
-        }
-      />
-      <View style={{ paddingBottom: insets.bottom }} className="border-t border-border bg-surface px-4 py-3">
-        <View className="flex-row items-center">
-          <TextInput
-            className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 mr-2"
-            style={{ fontSize: 16, color: '#FFFFFF' }}
-            placeholder="Ask for advice or share what's on your mind..."
-            placeholderTextColor="#A0A0A0"
-            value={inputText}
-            onChangeText={setInputText}
-            multiline
-            maxLength={500}
-          />
-          <Button
-            title="Send"
-            onPress={handleSend}
-            disabled={!inputText.trim() || loading}
-            loading={loading}
-            className="px-4"
-          />
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          keyExtractor={(item, index) => `message-${index}`}
+          renderItem={({ item }) => (
+            <ChatMessage message={item.content} isUser={item.role === "user"} />
+          )}
+          contentContainerStyle={{ flexGrow: 1, padding: 24 }}
+          keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
+        />
+        <View
+          style={{ paddingBottom: insets.bottom }}
+          className="border-t border-border bg-surface px-4 py-3"
+        >
+          <View className="flex-row items-center">
+            <TextInput
+              className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 mr-2"
+              style={{ fontSize: 16, color: theme.text }}
+              placeholder="Ask for advice or share what's on your mind..."
+              placeholderTextColor={theme.textSecondary}
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+              maxLength={500}
+            />
+            <Button
+              title="Send"
+              onPress={handleSend}
+              disabled={!inputText.trim() || loading}
+              loading={loading}
+              className="px-4"
+            />
+          </View>
         </View>
-      </View>
-      {/* Bottom navigation bar */}
-      <BottomNavBar navigation={navigation} currentRoute="WingmanChat" />
+        {/* Bottom navigation bar */}
+        <BottomNavBar navigation={navigation} currentRoute="WingmanChat" />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-

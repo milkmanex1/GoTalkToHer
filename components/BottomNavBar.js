@@ -2,9 +2,10 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path, Circle } from "react-native-svg";
+import { theme } from "../src/theme/colors";
 
 // Icon components
-const HomeIcon = ({ color = "#A0A0A0", size = 24 }) => (
+const HomeIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -20,7 +21,7 @@ const HomeIcon = ({ color = "#A0A0A0", size = 24 }) => (
   </Svg>
 );
 
-const MessageCircleMoreIcon = ({ color = "#A0A0A0", size = 24 }) => (
+const MessageCircleMoreIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -38,7 +39,7 @@ const MessageCircleMoreIcon = ({ color = "#A0A0A0", size = 24 }) => (
   </Svg>
 );
 
-const HeartIcon = ({ color = "#A0A0A0", size = 24 }) => (
+const HeartIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -53,7 +54,7 @@ const HeartIcon = ({ color = "#A0A0A0", size = 24 }) => (
   </Svg>
 );
 
-const UserIcon = ({ color = "#A0A0A0", size = 24 }) => (
+const UserIcon = ({ color, size = 24 }) => (
   <Svg
     width={size}
     height={size}
@@ -105,8 +106,8 @@ export default function BottomNavBar({ navigation, currentRoute }) {
         {NAV_ITEMS.map((item) => {
           const IconComponent = item.icon;
           const isActive = currentRoute === item.route;
-          const iconColor = isActive ? "#FF4FA3" : "#A0A0A0";
-          const labelColor = isActive ? "#FF4FA3" : "#A0A0A0";
+          const iconColor = isActive ? theme.primary : theme.textSecondary;
+          const labelColor = isActive ? theme.primary : theme.textSecondary;
 
           return (
             <TouchableOpacity

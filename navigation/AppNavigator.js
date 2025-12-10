@@ -1,12 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useAuth } from "../context/AuthContext";
+import { theme } from "../src/theme/colors";
 import LoginScreen from "../screens/LoginScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
 import HomeScreen from "../screens/HomeScreen";
@@ -32,13 +29,13 @@ export default function AppNavigator() {
   // Reset navigation when auth state changes (after initial load)
   useEffect(() => {
     if (!ready || loading) return;
-    
+
     // Skip reset on initial mount - initialRouteName handles that
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
-    
+
     // Only reset when auth state changes after mount
     if (!session) {
       navigationRef.current?.reset({
@@ -66,11 +63,13 @@ export default function AppNavigator() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#0E0F12",
+          backgroundColor: theme.background,
         }}
       >
-        <ActivityIndicator size="large" color="#FF4FA3" />
-        <Text style={{ color: "#D0D0D0", marginTop: 16 }}>Loading...</Text>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={{ color: theme.textSecondary, marginTop: 16 }}>
+          Loading...
+        </Text>
       </View>
     );
   }
@@ -89,14 +88,14 @@ export default function AppNavigator() {
         initialRouteName={initialRoute}
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#0E0F12",
-            borderBottomColor: "#2D2F34",
+            backgroundColor: theme.background,
+            borderBottomColor: theme.border,
             borderBottomWidth: 1,
           },
-          headerTintColor: "#FFFFFF",
+          headerTintColor: theme.text,
           headerTitleStyle: {
             fontWeight: "bold",
-            color: "#FFFFFF",
+            color: theme.text,
           },
         }}
       >
@@ -126,8 +125,8 @@ export default function AppNavigator() {
           options={({ navigation }) => ({
             title: "Go Talk To Her",
             headerStyle: {
-              backgroundColor: "#0E0F12",
-              borderBottomColor: "#2D2F34",
+              backgroundColor: theme.background,
+              borderBottomColor: theme.border,
               borderBottomWidth: 1,
               height: 100,
             },
