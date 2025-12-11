@@ -377,8 +377,8 @@ export default function ApproachTimerScreen({ navigation }) {
                 <Image
                   source={require("../assets/images/pink_lightning.png")}
                   style={{
-                    width: 200,
-                    height: 200,
+                    width: 220,
+                    height: 220,
                     resizeMode: "contain",
                   }}
                 />
@@ -403,7 +403,7 @@ export default function ApproachTimerScreen({ navigation }) {
                     color: theme.textSecondary,
                     textAlign: "center",
                     lineHeight: 25.2,
-                    marginBottom: 40,
+                    marginBottom: 30,
                   }}
                 >
                   {motivationalMessage}

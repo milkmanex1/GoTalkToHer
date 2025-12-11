@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useAuth } from "../context/AuthContext";
@@ -12,12 +12,26 @@ import ApproachTimerScreen from "../screens/ApproachTimerScreen";
 import ConversationStartersScreen from "../screens/ConversationStartersScreen";
 import MotivationBoostScreen from "../screens/MotivationBoostScreen";
 import PostActionReviewScreen from "../screens/PostActionReviewScreen";
+import ReviewSubmittedScreen from "../screens/ReviewSubmittedScreen";
 import WingmanChatScreen from "../screens/WingmanChatScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import TestScreen from "../screens/TestScreen";
 import SituationSelectScreen from "../screens/SituationSelectScreen";
 import SituationPrepScreen from "../screens/SituationPrepScreen";
 import WeeklyInsightsScreen from "../screens/WeeklyInsightsScreen";
+
+// Custom header component for ReviewSubmitted screen
+const ReviewSubmittedHeader = () => (
+  <Text
+    style={{
+      fontSize: Platform.select({ ios: 17, android: 20 }),
+      fontWeight: "bold",
+      color: theme.text,
+    }}
+  >
+    Review Submitted
+  </Text>
+);
 
 const Stack = createStackNavigator();
 
@@ -215,6 +229,15 @@ export default function AppNavigator() {
           options={{
             title: "Post-Action Review",
             keyboardHandlingEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ReviewSubmitted"
+          component={ReviewSubmittedScreen}
+          options={{
+            headerTitle: () => <ReviewSubmittedHeader />,
+            headerTitleAlign: "left",
+            headerShown: true,
           }}
         />
         <Stack.Screen

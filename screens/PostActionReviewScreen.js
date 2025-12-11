@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,14 @@ import { handleError } from "../lib/errorHandler";
 import { updateProgress } from "../lib/progress";
 import { theme } from "../src/theme/colors";
 
+const REVIEW_INTROS = [
+  "Nice work showing up today. Walk me through it.",
+  "Take a breath, king. Tell me what happened.",
+  "Every rep counts. Let's reflect on this one.",
+  "No pressure. Just share it honestly.",
+  "Alright bro, let's break it down real quick.",
+];
+
 const OUTCOMES = [
   { id: "did_not_approach", label: "Did not approach" },
   { id: "not_interested", label: "Approached but she wasn't interested" },
@@ -37,8 +45,14 @@ export default function PostActionReviewScreen({ navigation }) {
   const [howTheyFelt, setHowTheyFelt] = useState("");
   const [aiFeedback, setAiFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [introLine, setIntroLine] = useState("");
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    // Select random intro line on mount
+    const randomIndex = Math.floor(Math.random() * REVIEW_INTROS.length);
+    setIntroLine(REVIEW_INTROS[randomIndex]);
+  }, []);
 
   const handleSubmit = async () => {
     if (!selectedOutcome) {
@@ -115,7 +129,12 @@ export default function PostActionReviewScreen({ navigation }) {
         }
       }
 
-      setSubmitted(true);
+      // Navigate to ReviewSubmitted screen instead of showing success card
+      navigation.replace("ReviewSubmitted", {
+        approached: selectedOutcome !== "did_not_approach",
+        aiFeedback: feedback,
+        outcome: selectedOutcome,
+      });
     } catch (error) {
       console.error("Error in handleSubmit:", error);
       handleError(error, "Failed to submit review. Please try again.");
@@ -129,7 +148,6 @@ export default function PostActionReviewScreen({ navigation }) {
     setWhatHappened("");
     setHowTheyFelt("");
     setAiFeedback(null);
-    setSubmitted(false);
   };
 
   const handleQuickSubmit = async () => {
@@ -178,15 +196,12 @@ export default function PostActionReviewScreen({ navigation }) {
         }
       }
 
-      // Show success and reset form
-      Alert.alert("Success", "Review submitted successfully!", [
-        {
-          text: "OK",
-          onPress: () => {
-            handleReset();
-          },
-        },
-      ]);
+      // Navigate to ReviewSubmitted screen (without AI feedback)
+      navigation.replace("ReviewSubmitted", {
+        approached: selectedOutcome !== "did_not_approach",
+        aiFeedback: null,
+        outcome: selectedOutcome,
+      });
     } catch (error) {
       console.error("Error in handleQuickSubmit:", error);
       handleError(error, "Failed to submit review. Please try again.");
@@ -222,95 +237,6 @@ export default function PostActionReviewScreen({ navigation }) {
     );
   }
 
-  if (submitted) {
-    return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: theme.background }}
-        edges={[]}
-      >
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-        >
-          <ScrollView
-            className="flex-1 bg-background"
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
-              <Card
-                className="mb-6"
-                style={{
-                  backgroundColor: theme.primaryRgba(0.1),
-                  borderColor: theme.primary,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 26,
-                    fontWeight: "bold",
-                    color: theme.primary,
-                    marginBottom: 16,
-                    textAlign: "center",
-                    lineHeight: 33.8,
-                  }}
-                >
-                  Great job taking action! 🎉
-                </Text>
-                {aiFeedback && (
-                  <>
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        fontWeight: "600",
-                        color: theme.text,
-                        marginBottom: 12,
-                      }}
-                    >
-                      AI Feedback:
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        color: theme.text,
-                        lineHeight: 24,
-                      }}
-                    >
-                      {aiFeedback}
-                    </Text>
-                  </>
-                )}
-                {!aiFeedback && (
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      color: theme.text,
-                      lineHeight: 24,
-                      textAlign: "center",
-                    }}
-                  >
-                    Your review has been submitted successfully!
-                  </Text>
-                )}
-              </Card>
-              <Button
-                title="Submit Another Review"
-                onPress={handleReset}
-                className="w-full"
-              />
-            </View>
-          </ScrollView>
-          {/* Bottom navigation bar */}
-          <BottomNavBar
-            navigation={navigation}
-            currentRoute="PostActionReview"
-          />
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: theme.background }}
@@ -327,6 +253,21 @@ export default function PostActionReviewScreen({ navigation }) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+            {/* Rotating intro text */}
+            {/* {introLine && (
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: theme.primary,
+                  marginBottom: 16,
+                  lineHeight: 26,
+                  fontWeight: "600",
+                }}
+              >
+                {introLine}
+              </Text>
+            )} */}
+
             <Text
               style={{
                 fontSize: 24,
@@ -335,7 +276,7 @@ export default function PostActionReviewScreen({ navigation }) {
                 marginBottom: 24,
               }}
             >
-              How did it go?
+              Bro, how did it go?
             </Text>
 
             <View style={{ marginBottom: 24 }}>
