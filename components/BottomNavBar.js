@@ -115,7 +115,11 @@ export default function BottomNavBar({ navigation, currentRoute }) {
           return (
             <TouchableOpacity
               key={item.id}
-              onPress={() => navigation.navigate(item.route)}
+              onPress={() => {
+                if (currentRoute !== item.route) {
+                  navigation.navigate(item.route);
+                }
+              }}
               className="items-center flex-1"
             >
               <View className="mb-0.5">

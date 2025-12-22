@@ -199,17 +199,23 @@ const SITUATIONAL_OPENERS = {
   ],
   School: [
     {
-      opener: "Hey, are you in [class]? I'm trying to find someone to study with.",
+      opener:
+        "Hey, are you in [class]? I'm trying to find someone to study with.",
       tone: "Friendly and academic",
       dos: [
         "Be genuine about your question",
         "Show interest in their studies",
         "Keep it casual",
       ],
-      donts: ["Be pushy", "Make it obvious you're hitting on them", "Interrupt their studying"],
+      donts: [
+        "Be pushy",
+        "Make it obvious you're hitting on them",
+        "Interrupt their studying",
+      ],
     },
     {
-      opener: "Excuse me, do you know where [building/room] is? I'm a bit lost on campus.",
+      opener:
+        "Excuse me, do you know where [building/room] is? I'm a bit lost on campus.",
       tone: "Polite and approachable",
       dos: [
         "Be respectful of their time",
@@ -219,29 +225,31 @@ const SITUATIONAL_OPENERS = {
       donts: ["Be pushy", "Ignore signals", "Make it awkward"],
     },
     {
-      opener: "Hey, I noticed you're studying [subject]. I'm taking that class too. How's it going?",
+      opener:
+        "Hey, I noticed you're studying [subject]. I'm taking that class too. How's it going?",
       tone: "Curious and relatable",
       dos: [
         "Show genuine interest",
         "Share your own experience",
         "Keep it light and friendly",
       ],
-      donts: ["Pretend to know things you don't", "Be pushy", "Interrupt their studying"],
+      donts: [
+        "Pretend to know things you don't",
+        "Be pushy",
+        "Interrupt their studying",
+      ],
     },
   ],
   Misc: [
     {
       opener: "Hey, I know this is random, but I had to say hi. I'm [name].",
       tone: "Confident and friendly",
-      dos: [
-        "Be genuine",
-        "Keep it brief",
-        "Respect their response",
-      ],
+      dos: ["Be genuine", "Keep it brief", "Respect their response"],
       donts: ["Be pushy", "Overthink it", "Make it awkward"],
     },
     {
-      opener: "Excuse me, I couldn't help but notice [something specific and positive]. I had to come say hi.",
+      opener:
+        "Excuse me, I couldn't help but notice [something specific and positive]. I had to come say hi.",
       tone: "Observant and respectful",
       dos: [
         "Be specific about what caught your attention",
@@ -251,7 +259,8 @@ const SITUATIONAL_OPENERS = {
       donts: ["Be generic", "Be pushy", "Make it about appearance only"],
     },
     {
-      opener: "Hey, do you have a minute? I noticed [something specific] and wanted to say hi.",
+      opener:
+        "Hey, do you have a minute? I noticed [something specific] and wanted to say hi.",
       tone: "Polite and genuine",
       dos: [
         "Be specific and genuine",
@@ -380,16 +389,16 @@ export default function SituationPrepScreen({ route, navigation }) {
                       paddingVertical: 8,
                       paddingHorizontal: 12,
                       borderRadius: 8,
-                      backgroundColor: theme.primaryRgba(0.1),
+                      backgroundColor: theme.textSecondaryRgba(0.1),
                       borderWidth: 1,
-                      borderColor: theme.primary,
+                      borderColor: theme.textSecondary,
                     }}
                   >
                     <Text
                       style={{
                         fontSize: 12,
                         fontWeight: "600",
-                        color: theme.primary,
+                        color: theme.textSecondary,
                       }}
                     >
                       Next
