@@ -5,6 +5,7 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -17,13 +18,18 @@ import { theme } from "../src/theme/colors";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const insets = useSafeAreaInsets();
 
-  const handleSendMagicLink = async () => {
+  const handleLogin = async () => {
     if (!email.trim()) {
       Alert.alert("Error", "Please enter your email");
+      return;
+    }
+
+    if (!password.trim()) {
+      Alert.alert("Error", "Please enter your password");
       return;
     }
 
@@ -35,20 +41,40 @@ export default function LoginScreen({ navigation }) {
     }
 
     setLoading(true);
-    setSuccess(false);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
-        options: {
-          emailRedirectTo: "myapp://auth-callback",
-        },
+        password: password.trim(),
       });
 
       if (error) throw error;
 
-      setSuccess(true);
+      // Check if user has a profile
+      if (data?.user?.id) {
+        const { data: profile, error: profileError } = await supabase
+          .from("user_profile")
+          .select("*")
+          .eq("id", data.user.id)
+          .single();
+
+        if (profileError) {
+          // Profile doesn't exist (PGRST116 = no rows returned)
+          if (profileError.code === "PGRST116") {
+            // Navigate to Onboarding to create profile
+            navigation.navigate("Onboarding");
+          } else {
+            throw profileError;
+          }
+        } else {
+          // Profile exists, navigate to Home
+          navigation.navigate("Home");
+        }
+      } else {
+        // Fallback: navigate to Home if user ID is not available
+        navigation.navigate("Home");
+      }
     } catch (error) {
-      handleError(error, "Failed to send magic link. Please try again.");
+      handleError(error, "Failed to log in. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -95,33 +121,8 @@ export default function LoginScreen({ navigation }) {
                 lineHeight: 22.4,
               }}
             >
-              Sign in with a magic link sent to your email
+              Sign in with your email and password
             </Text>
-
-            {/* Success Message */}
-            {success && (
-              <View
-                style={{
-                  backgroundColor: theme.successRgba(0.1),
-                  borderColor: theme.success,
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  padding: 16,
-                  marginBottom: 24,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: theme.success,
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                >
-                  Magic link sent! Check your email.
-                </Text>
-              </View>
-            )}
 
             {/* Email Input */}
             <View style={{ marginBottom: 24 }}>
@@ -141,10 +142,7 @@ export default function LoginScreen({ navigation }) {
                 placeholder="Enter your email"
                 placeholderTextColor={theme.textSecondary}
                 value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  setSuccess(false);
-                }}
+                onChangeText={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 autoComplete="email"
@@ -152,14 +150,58 @@ export default function LoginScreen({ navigation }) {
               />
             </View>
 
-            {/* Send Magic Link Button */}
+            {/* Password Input */}
+            <View style={{ marginBottom: 24 }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: theme.text,
+                  marginBottom: 12,
+                }}
+              >
+                Password
+              </Text>
+              <TextInput
+                className="bg-surface border border-border rounded-xl px-4 py-3"
+                style={{ fontSize: 16, color: theme.text }}
+                placeholder="Enter your password"
+                placeholderTextColor={theme.textSecondary}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoComplete="password"
+                editable={!loading}
+              />
+            </View>
+
+            {/* Log In Button */}
             <Button
-              title={loading ? "Sending..." : "Send Magic Link"}
-              onPress={handleSendMagicLink}
-              disabled={loading || success}
+              title={loading ? "Logging In..." : "Log In"}
+              onPress={handleLogin}
+              disabled={loading || !email.trim() || !password.trim()}
               loading={loading}
               className="w-full mb-6"
             />
+
+            {/* Sign Up Link */}
+            <View className="flex-row justify-center items-center">
+              <Text style={{ fontSize: 16, color: theme.textSecondary }}>
+                Don't have an account?{" "}
+              </Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: theme.primary,
+                    fontWeight: "600",
+                  }}
+                >
+                  Sign Up
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

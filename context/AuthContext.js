@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { Storage } from "../lib/storage";
+
+console.log("🔥 APP MOUNTED / AUTH CONTEXT INITIALIZED");
 
 const AuthContext = createContext(null);
 
@@ -36,10 +39,18 @@ export function AuthProvider({ children }) {
         throw profileError;
       }
 
-      setProfile(data);
+      // Only set profile if data exists - never temporarily set to null once loaded
+      if (data) {
+        setProfile(data);
+      }
     } catch (err) {
       console.error("Error loading profile:", err);
-      setProfile(null);
+      // Only set to null if there's an actual error, not during normal flow
+      // This prevents profile from being temporarily null during hydration
+      if (err.code !== "PGRST116") {
+        // Only clear profile on actual errors, not "not found" which is expected
+        setProfile(null);
+      }
     }
   };
 
@@ -62,8 +73,20 @@ export function AuthProvider({ children }) {
         setError(null);
 
         // Get initial session
-        const { data: { session: initialSession }, error: sessionError } = 
-          await supabase.auth.getSession();
+        const {
+          data: { session: initialSession },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
+        // 🔥 DEBUG: Log full session data
+        console.log(
+          "🔥 AUTH SESSION USER ID:",
+          initialSession?.user?.id || "NO SESSION"
+        );
+        console.log(
+          "🔥 FULL SESSION DATA:",
+          JSON.stringify(initialSession, null, 2)
+        );
 
         if (sessionError) {
           throw sessionError;
@@ -79,6 +102,20 @@ export function AuthProvider({ children }) {
             setProfile(null);
           }
 
+          // 🔥 DEBUG: Log stored user profile ID from Storage
+          Storage.getUserId?.()
+            .then((id) => {
+              console.log("🔥 STORED USER PROFILE ID:", id || "NO STORED ID");
+            })
+            .catch((err) => {
+              console.log(
+                "🔥 STORED USER PROFILE ID: Storage.getUserId() not available or error:",
+                err
+              );
+            });
+
+          // ready becomes true only after session + profile are fully loaded
+          // If session exists but no profile, still set ready (user needs onboarding)
           setReady(true);
           setLoading(false);
         }
@@ -102,14 +139,39 @@ export function AuthProvider({ children }) {
     } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!mounted) return;
 
+      // ⚡ DEBUG: Log auth state change events
+      console.log("⚡ AUTH STATE CHANGE EVENT:", event);
+      console.log(
+        "⚡ UPDATED SESSION USER ID:",
+        newSession?.user?.id || "NO SESSION"
+      );
+
       setSession(newSession);
 
       // Reload profile when session changes
+      // Only set profile to null on actual logout (SIGNED_OUT event)
       if (newSession?.user?.id) {
         await loadProfile(newSession.user.id);
-      } else {
+
+        // 🔥 DEBUG: Log stored user profile ID after profile reload
+        Storage.getUserId?.()
+          .then((id) => {
+            console.log(
+              "🔥 STORED USER PROFILE ID (after auth change):",
+              id || "NO STORED ID"
+            );
+          })
+          .catch((err) => {
+            console.log(
+              "🔥 STORED USER PROFILE ID (after auth change): Storage.getUserId() not available or error:",
+              err
+            );
+          });
+      } else if (event === "SIGNED_OUT") {
+        // Only clear profile on explicit sign out
         setProfile(null);
       }
+      // Don't clear profile on other events to prevent temporary null states
     });
 
     return () => {
@@ -130,4 +192,3 @@ export function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-

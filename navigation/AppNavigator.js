@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { theme } from "../src/theme/colors";
 import { getLatestWeeklyInsights } from "../lib/insights";
 import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
 import HomeScreen from "../screens/HomeScreen";
 import ApproachTimerScreen from "../screens/ApproachTimerScreen";
@@ -42,6 +43,8 @@ export default function AppNavigator() {
   const { session, profile, ready, loading } = useAuth();
   const isInitialMount = useRef(true);
   const mondayPromptChecked = useRef(false);
+  const prevSessionRef = useRef(session);
+  const prevProfileRef = useRef(profile);
 
   // Optional: Auto-prompt on Monday if no insights generated this week
   useEffect(() => {
@@ -98,26 +101,39 @@ export default function AppNavigator() {
     // Skip reset on initial mount - initialRouteName handles that
     if (isInitialMount.current) {
       isInitialMount.current = false;
+      prevSessionRef.current = session;
+      prevProfileRef.current = profile;
       return;
     }
 
-    // Only reset when auth state changes after mount
-    if (!session) {
-      navigationRef.current?.reset({
-        index: 0,
-        routes: [{ name: "Login" }],
-      });
-    } else if (session && !profile) {
-      navigationRef.current?.reset({
-        index: 0,
-        routes: [{ name: "Onboarding" }],
-      });
-    } else if (session && profile) {
-      navigationRef.current?.reset({
-        index: 0,
-        routes: [{ name: "Home" }],
-      });
+    // Only reset when auth state fundamentally changes (null ↔ non-null transitions)
+    // Don't reset when profile data is just refreshed (object reference changes but still exists)
+    const sessionChanged = !prevSessionRef.current !== !session; // null ↔ non-null
+    const profileChanged = !prevProfileRef.current !== !profile; // null ↔ non-null
+
+    if (sessionChanged || profileChanged) {
+      // Only reset when auth state changes after mount
+      if (!session) {
+        navigationRef.current?.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        });
+      } else if (session && !profile) {
+        navigationRef.current?.reset({
+          index: 0,
+          routes: [{ name: "Onboarding" }],
+        });
+      } else if (session && profile) {
+        navigationRef.current?.reset({
+          index: 0,
+          routes: [{ name: "Home" }],
+        });
+      }
     }
+
+    // Update refs for next comparison
+    prevSessionRef.current = session;
+    prevProfileRef.current = profile;
   }, [ready, loading, session, profile]);
 
   // Show loading screen while auth is initializing
@@ -168,6 +184,11 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
+          options={{ headerShown: false, keyboardHandlingEnabled: true }}
+        />
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
           options={{ headerShown: false, keyboardHandlingEnabled: true }}
         />
 

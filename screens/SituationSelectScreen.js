@@ -135,6 +135,43 @@ const BusIcon = ({ color, size = 24 }) => (
   </Svg>
 );
 
+const SchoolIcon = ({ color, size = 24 }) => (
+  <Svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <Path d="M14 21v-3a2 2 0 0 0-4 0v3" />
+    <Path d="M18 5v16" />
+    <Path d="m4 6 7.106-3.79a2 2 0 0 1 1.788 0L20 6" />
+    <Path d="m6 11-3.52 2.147a1 1 0 0 0-.48.854V19a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a1 1 0 0 0-.48-.853L18 11" />
+    <Path d="M6 5v16" />
+    <Circle cx="12" cy="9" r="2" />
+  </Svg>
+);
+
+const MiscIcon = ({ color, size = 24 }) => (
+  <Svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <Circle cx="12" cy="12" r="1" />
+    <Circle cx="19" cy="12" r="1" />
+    <Circle cx="5" cy="12" r="1" />
+  </Svg>
+);
+
 const SITUATIONS = [
   { id: "Café", label: "Café", icon: CoffeeIcon },
   { id: "Gym", label: "Gym", icon: DumbbellIcon },
@@ -143,6 +180,8 @@ const SITUATIONS = [
   { id: "Bars", label: "Bars / Night Club", icon: BeerIcon },
   { id: "Bookstore", label: "Bookstore", icon: LibraryIcon },
   { id: "Train", label: "Bus / Train", icon: BusIcon },
+  { id: "School", label: "School", icon: SchoolIcon },
+  { id: "Misc", label: "Misc", icon: MiscIcon },
 ];
 
 export default function SituationSelectScreen({ navigation }) {

@@ -57,12 +57,12 @@ export default function RegisterScreen({ navigation }) {
 
       const userId = authData.user.id;
 
-      // Create user_profile row with the Supabase user ID
+      // Create user_profile row with the Supabase Auth ID as the id
       const { error: profileError } = await supabase
         .from("user_profile")
         .insert([
           {
-            auth_user_id: userId,
+            id: userId, // match Supabase Auth ID
             name: "", // Will be filled in onboarding
             age_range: "23-27",
             confidence_level: 5,

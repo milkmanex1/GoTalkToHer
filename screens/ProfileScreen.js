@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { Storage } from "../lib/storage";
@@ -16,17 +17,26 @@ import { getActivityHeatmap } from "../lib/progress";
 import { theme } from "../src/theme/colors";
 
 export default function ProfileScreen({ navigation }) {
-  const { profile, session, loading: authLoading, ready } = useAuth();
+  const { profile, session, loading: authLoading, ready, refresh } = useAuth();
+  const [localProfile, setLocalProfile] = useState(null);
   const [activityData, setActivityData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(10); // Default to Balanced (10s)
   const insets = useSafeAreaInsets();
+  const isRefreshingRef = useRef(false);
 
+  // Freeze profile into stable local state to prevent crashes during hydration
   useEffect(() => {
     if (profile) {
+      setLocalProfile(profile);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (localProfile) {
       loadActivityData();
       loadTimerDuration();
     }
-  }, [profile]);
+  }, [localProfile]);
 
   const loadTimerDuration = useCallback(async () => {
     try {
@@ -47,15 +57,31 @@ export default function ProfileScreen({ navigation }) {
   }, []);
 
   const loadActivityData = useCallback(async () => {
-    if (!profile?.id) return;
+    if (!localProfile?.id) {
+      setActivityData([]);
+      return;
+    }
 
     try {
-      const heatmapData = await getActivityHeatmap(profile.id);
-      setActivityData(heatmapData);
+      const heatmapData = await getActivityHeatmap(localProfile.id);
+      setActivityData(heatmapData || []);
     } catch (error) {
       console.error("Error loading activity data:", error);
+      setActivityData([]);
     }
-  }, [profile]);
+  }, [localProfile]);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Delay the refresh slightly to let AuthContext restore the session first
+      const timer = setTimeout(() => {
+        refresh?.();
+        console.log("🔄 ProfileScreen refreshed (delayed)");
+      }, 80); // small delay prevents null-hydration crash
+
+      return () => clearTimeout(timer);
+    }, [refresh])
+  );
 
   const handleSignOut = async () => {
     try {
@@ -69,44 +95,17 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
-  // Show loading while auth is initializing
-  if (!ready || authLoading) {
+  // Show loading spinner until profile is actually available
+  // NEVER show "Profile not found" or "Please log in" - this causes logout loops
+  if (!ready || authLoading || !session || !localProfile) {
     return (
       <SafeAreaView
         style={{ flex: 1, backgroundColor: theme.background }}
         edges={[]}
       >
-        <View className="flex-1 items-center justify-center bg-background">
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={theme.primary} />
-          <Text className="text-textSecondary mt-4">Loading...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // If no session, redirect to login (shouldn't happen due to navigation guards)
-  if (!session) {
-    return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: theme.background }}
-        edges={[]}
-      >
-        <View className="flex-1 items-center justify-center bg-background">
-          <Text className="text-textSecondary">Please log in</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // If no profile, redirect to onboarding (shouldn't happen due to navigation guards)
-  if (!profile) {
-    return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: theme.background }}
-        edges={[]}
-      >
-        <View className="flex-1 items-center justify-center bg-background">
-          <Text className="text-textSecondary">Profile not found</Text>
+          <Text className="text-textSecondary mt-4">Loading profile...</Text>
         </View>
       </SafeAreaView>
     );
@@ -139,7 +138,7 @@ export default function ProfileScreen({ navigation }) {
               <Text
                 style={{ fontSize: 18, color: theme.text, fontWeight: "600" }}
               >
-                {profile.name || "Not set"}
+                {localProfile.name || "Not set"}
               </Text>
             </View>
           </View>
@@ -178,7 +177,7 @@ export default function ProfileScreen({ navigation }) {
                         color: theme.success,
                       }}
                     >
-                      {profile.past_successes || 0}
+                      {localProfile?.past_successes ?? 0}
                     </Text>
                   </View>
                   <Text style={{ fontSize: 48 }}>🎉</Text>
@@ -207,7 +206,7 @@ export default function ProfileScreen({ navigation }) {
                         color: theme.error,
                       }}
                     >
-                      {profile.past_rejections || 0}
+                      {localProfile?.past_rejections ?? 0}
                     </Text>
                   </View>
                   <Text style={{ fontSize: 48 }}>💪</Text>
@@ -250,7 +249,7 @@ export default function ProfileScreen({ navigation }) {
                         color: theme.primary,
                       }}
                     >
-                      {profile.total_approaches || 0}
+                      {localProfile?.total_approaches ?? 0}
                     </Text>
                   </View>
                 </View>
@@ -278,7 +277,7 @@ export default function ProfileScreen({ navigation }) {
                         color: theme.primary,
                       }}
                     >
-                      {profile.timer_runs || 0}
+                      {localProfile?.timer_runs ?? 0}
                     </Text>
                   </View>
                 </View>
@@ -306,8 +305,8 @@ export default function ProfileScreen({ navigation }) {
                         color: theme.success,
                       }}
                     >
-                      {profile.success_rate
-                        ? `${profile.success_rate.toFixed(1)}%`
+                      {typeof localProfile?.success_rate === "number"
+                        ? `${localProfile.success_rate.toFixed(1)}%`
                         : "0%"}
                     </Text>
                   </View>
@@ -336,7 +335,7 @@ export default function ProfileScreen({ navigation }) {
                         color: theme.primary,
                       }}
                     >
-                      {profile.current_streak || 0}
+                      {localProfile?.current_streak ?? 0}
                     </Text>
                   </View>
                 </View>
@@ -364,7 +363,7 @@ export default function ProfileScreen({ navigation }) {
                         color: theme.warning,
                       }}
                     >
-                      {profile.longest_streak || 0}
+                      {localProfile?.longest_streak ?? 0}
                     </Text>
                   </View>
                 </View>
@@ -391,54 +390,56 @@ export default function ProfileScreen({ navigation }) {
                     minHeight: 120,
                   }}
                 >
-                  {activityData.map((day, index) => {
-                    const maxCount = Math.max(
-                      ...activityData.map((d) => d.count),
-                      1
-                    );
-                    const height =
-                      maxCount > 0 ? (day.count / maxCount) * 80 : 0;
-                    return (
-                      <View
-                        key={index}
-                        style={{
-                          flex: 1,
-                          alignItems: "center",
-                          marginHorizontal: 2,
-                        }}
-                      >
-                        <View
-                          style={{
-                            width: "100%",
-                            height: Math.max(height, 4),
-                            backgroundColor:
-                              day.count > 0
-                                ? theme.primary
-                                : theme.textSecondaryRgba(0.2),
-                            borderRadius: 4,
-                            marginBottom: 8,
-                          }}
-                        />
-                        <Text
-                          style={{
-                            fontSize: 10,
-                            color: theme.textSecondary,
-                            marginBottom: 4,
-                          }}
-                        >
-                          {day.count}
-                        </Text>
-                        <Text
-                          style={{
-                            fontSize: 10,
-                            color: theme.textSecondary,
-                          }}
-                        >
-                          {day.dayName}
-                        </Text>
-                      </View>
-                    );
-                  })}
+                  {activityData && activityData.length > 0
+                    ? activityData.map((day, index) => {
+                        const maxCount = Math.max(
+                          ...activityData.map((d) => d.count || 0),
+                          1
+                        );
+                        const height =
+                          maxCount > 0 ? ((day.count || 0) / maxCount) * 80 : 0;
+                        return (
+                          <View
+                            key={index}
+                            style={{
+                              flex: 1,
+                              alignItems: "center",
+                              marginHorizontal: 2,
+                            }}
+                          >
+                            <View
+                              style={{
+                                width: "100%",
+                                height: Math.max(height, 4),
+                                backgroundColor:
+                                  (day.count || 0) > 0
+                                    ? theme.primary
+                                    : theme.textSecondaryRgba(0.2),
+                                borderRadius: 4,
+                                marginBottom: 8,
+                              }}
+                            />
+                            <Text
+                              style={{
+                                fontSize: 10,
+                                color: theme.textSecondary,
+                                marginBottom: 4,
+                              }}
+                            >
+                              {day.count || 0}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 10,
+                                color: theme.textSecondary,
+                              }}
+                            >
+                              {day.dayName || ""}
+                            </Text>
+                          </View>
+                        );
+                      })
+                    : null}
                 </View>
               </View>
             </View>

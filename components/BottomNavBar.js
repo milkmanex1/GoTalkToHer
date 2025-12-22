@@ -100,6 +100,9 @@ const NAV_ITEMS = [
 export default function BottomNavBar({ navigation, currentRoute }) {
   const insets = useSafeAreaInsets();
 
+  // Prevent rendering if navigation is missing - prevents native crashes
+  if (!navigation) return null;
+
   return (
     <View style={{ paddingBottom: insets.bottom + 4 }} className="px-2">
       <View className="flex-row justify-around items-center border-t border-border pt-2">

@@ -51,53 +51,41 @@ export default function OnboardingScreen({ navigation }) {
       return;
     }
 
-    if (!session?.user) {
-      Alert.alert("Error", "Please sign in to continue");
+    // Get authenticated user ID from session
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.id) {
+      Alert.alert("Error", "No authenticated user found");
       navigation.replace("Login");
       return;
     }
 
+    const userId = session.user.id;
+
     setLoading(true);
     try {
-      // Insert the profile using id: session.user.id
-      const { error } = await supabase.from("user_profile").insert([
-        {
-          id: session.user.id,
+      // Update the existing profile using the authenticated user's ID
+      const { error } = await supabase
+        .from("user_profile")
+        .update({
           name: name.trim(),
           age_range: ageRange,
           confidence_level: confidenceLevel,
           biggest_challenge: biggestChallenge,
           fear_type: biggestChallenge,
           preferred_environments: [],
-          past_successes: 0,
-          past_rejections: 0,
-        },
-      ]);
+        })
+        .eq("id", userId);
 
-      if (error) {
-        // If insert fails, check if profile already exists
-        if (error.code === "23505") {
-          // Unique constraint violation - profile already exists
-          Alert.alert(
-            "Error",
-            "Profile already exists. Redirecting to home..."
-          );
-          // Refresh profile to load existing one
-          await refresh();
-          navigation.replace("Home");
-          return;
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       // Refresh profile so AuthContext updates immediately
       await refresh();
 
-      // Navigate to Home using navigation reset
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Home" }],
-      });
+      // Navigate to Home
+      navigation.replace("Home");
     } catch (error) {
       handleError(error, "Failed to save profile. Please try again.");
     } finally {
