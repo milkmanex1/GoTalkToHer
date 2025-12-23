@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Dimensions,
   Image,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -59,8 +60,9 @@ export default function ApproachTimerScreen({ navigation }) {
   const [timerComplete, setTimerComplete] = useState(false);
   const [sound, setSound] = useState(null);
   const [timerStartedAt, setTimerStartedAt] = useState(null);
-  const [timerDuration, setTimerDuration] = useState(10); // Default to 10 seconds
-  const [remainingTime, setRemainingTime] = useState(10);
+  const [timerDuration, setTimerDuration] = useState(15); // Default to 15 seconds
+  const [remainingTime, setRemainingTime] = useState(15);
+  const [showDurationModal, setShowDurationModal] = useState(false);
   const [motivationalMessage, setMotivationalMessage] = useState(
     MOTIVATIONAL_MESSAGES[0]
   );
@@ -294,19 +296,6 @@ export default function ApproachTimerScreen({ navigation }) {
                 You have {timerDuration} seconds. When it hits zero, you
                 approach her.
               </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: theme.textSecondary,
-                  textAlign: "center",
-                  paddingHorizontal: 16,
-                  lineHeight: 20,
-                  fontStyle: "italic",
-                }}
-              >
-                A proven cognitive technique that overrides fear and helps you
-                act instantly.
-              </Text>
             </View>
 
             <View className="w-full px-6">
@@ -316,6 +305,17 @@ export default function ApproachTimerScreen({ navigation }) {
                 className="w-full"
               />
             </View>
+
+            {/* Subtle timer duration control */}
+            <TouchableOpacity
+              onPress={() => setShowDurationModal(true)}
+              style={styles.durationControl}
+              activeOpacity={0.6}
+            >
+              <Text style={styles.durationControlText}>
+                Timer: {timerDuration}s · Change
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -426,6 +426,61 @@ export default function ApproachTimerScreen({ navigation }) {
             </View>
           </Animated.View>
         )}
+
+        {/* Duration Selection Modal */}
+        <Modal
+          visible={showDurationModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowDurationModal(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowDurationModal(false)}
+          >
+            <View
+              style={styles.modalContent}
+              onStartShouldSetResponder={() => true}
+            >
+              <Text style={styles.modalTitle}>Select Timer Duration</Text>
+              {[5, 10, 15].map((duration) => (
+                <TouchableOpacity
+                  key={duration}
+                  style={[
+                    styles.durationOption,
+                    timerDuration === duration && styles.durationOptionSelected,
+                  ]}
+                  onPress={async () => {
+                    try {
+                      await Storage.setTimerDuration(duration);
+                      setTimerDuration(duration);
+                      setRemainingTime(duration);
+                      setShowDurationModal(false);
+                    } catch (error) {
+                      console.error("Error saving timer duration:", error);
+                      // Still update UI even if storage fails
+                      setTimerDuration(duration);
+                      setRemainingTime(duration);
+                      setShowDurationModal(false);
+                    }
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.durationOptionText,
+                      timerDuration === duration &&
+                        styles.durationOptionTextSelected,
+                    ]}
+                  >
+                    {duration}s
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -528,5 +583,60 @@ const styles = StyleSheet.create({
     color: theme.textSecondary,
     fontSize: 14,
     textDecorationLine: "underline",
+  },
+  durationControl: {
+    marginTop: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  durationControlText: {
+    fontSize: 13,
+    color: theme.textSecondary,
+    textAlign: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    backgroundColor: theme.surface,
+    borderRadius: 16,
+    padding: 24,
+    width: "100%",
+    maxWidth: 320,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: theme.text,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  durationOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: theme.border,
+    backgroundColor: theme.background,
+  },
+  durationOptionSelected: {
+    borderColor: theme.primary,
+    backgroundColor: theme.primaryRgba(0.1),
+  },
+  durationOptionText: {
+    fontSize: 16,
+    color: theme.textSecondary,
+    textAlign: "center",
+  },
+  durationOptionTextSelected: {
+    color: theme.primary,
+    fontWeight: "500",
   },
 });
