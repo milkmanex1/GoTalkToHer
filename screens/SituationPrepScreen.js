@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Card from "../components/Card";
@@ -272,26 +272,26 @@ const SITUATIONAL_OPENERS = {
   ],
 };
 
-// Mindset messages per situation
-const MINDSET_MESSAGES = {
-  Café: "Friendly curiosity beats pressure.",
-  Gym: "Respect their space, show genuine interest.",
-  Mall: "A simple question can open a conversation.",
-  Street: "Confidence comes from taking action, not waiting for it.",
-  Bars: "Keep it light and fun — energy is everything.",
-  Bookstore: "Shared interests create natural connections.",
-  Train: "A genuine question is always welcome.",
-  School: "Academic settings create natural conversation opportunities.",
-  Misc: "Confidence and authenticity work in any situation.",
-};
+// Pre-approach opening tips
+const OPENING_TIPS = [
+  "Notice when she pauses or separates from her friends.",
+  "Watch for a break in her movement.",
+  "Wait for her to finish checking her phone.",
+  "Approach when her hands are free.",
+  "Look for the moment — not perfection.",
+];
 
 export default function SituationPrepScreen({ route, navigation }) {
   const { situation } = route.params || {};
   const allOpeners = SITUATIONAL_OPENERS[situation] || [];
   const [currentOpenerIndex, setCurrentOpenerIndex] = useState(0);
   const [tipExpanded, setTipExpanded] = useState(false);
-  const [mindsetExpanded, setMindsetExpanded] = useState(false);
-  const [actionCueExpanded, setActionCueExpanded] = useState(false);
+
+  // Randomly select one opening tip on component mount
+  const selectedOpeningTip = useMemo(() => {
+    const randomIndex = Math.floor(Math.random() * OPENING_TIPS.length);
+    return OPENING_TIPS[randomIndex];
+  }, []);
 
   // Get current opener data
   const currentOpenerData = allOpeners[currentOpenerIndex] || allOpeners[0];
@@ -301,10 +301,6 @@ export default function SituationPrepScreen({ route, navigation }) {
     currentOpenerData?.opener ||
     "Couldn't load opener — just be friendly and confident.";
   const tip = currentOpenerData?.dos?.[0] || "Be genuine and respectful.";
-  const mindset =
-    currentOpenerData?.tone ||
-    MINDSET_MESSAGES[situation] ||
-    "You've got this.";
 
   const handleNextOpener = () => {
     const nextIndex = (currentOpenerIndex + 1) % allOpeners.length;
@@ -467,98 +463,38 @@ export default function SituationPrepScreen({ route, navigation }) {
             )}
           </Card>
 
-          {/* Mindset Card */}
-          <Card className="mb-3">
-            <TouchableOpacity
-              onPress={() => setMindsetExpanded(!mindsetExpanded)}
+          {/* Pre-approach Instruction */}
+          <View
+            style={{
+              marginTop: 24,
+              marginBottom: 20,
+              paddingHorizontal: 8,
+            }}
+          >
+            <Text
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
+                fontSize: 15,
+                fontWeight: "600",
+                color: theme.textSecondary,
+                textAlign: "center",
+                marginBottom: 8,
+                lineHeight: 22,
               }}
             >
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "600",
-                  color: theme.textSecondary,
-                  textTransform: "uppercase",
-                  letterSpacing: 0.5,
-                }}
-              >
-                Mindset
-              </Text>
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: theme.textSecondary,
-                  fontWeight: "600",
-                }}
-              >
-                {mindsetExpanded ? "−" : "+"}
-              </Text>
-            </TouchableOpacity>
-            {mindsetExpanded && (
-              <View style={{ marginTop: 12 }}>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: theme.text,
-                    lineHeight: 24,
-                  }}
-                >
-                  {mindset}
-                </Text>
-              </View>
-            )}
-          </Card>
-
-          {/* Action Cue Card */}
-          <Card className="mb-4">
-            <TouchableOpacity
-              onPress={() => setActionCueExpanded(!actionCueExpanded)}
+              Before you go: identify the opening.
+            </Text>
+            <Text
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
+                fontSize: 14,
+                color: theme.textSecondary,
+                textAlign: "center",
+                lineHeight: 20,
+                opacity: 0.9,
               }}
             >
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "600",
-                  color: theme.textSecondary,
-                  textTransform: "uppercase",
-                  letterSpacing: 0.5,
-                }}
-              >
-                Action Cue
-              </Text>
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: theme.textSecondary,
-                  fontWeight: "600",
-                }}
-              >
-                {actionCueExpanded ? "−" : "+"}
-              </Text>
-            </TouchableOpacity>
-            {actionCueExpanded && (
-              <View style={{ marginTop: 12 }}>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: theme.textSecondary,
-                    lineHeight: 24,
-                    fontStyle: "italic",
-                  }}
-                >
-                  Take one breath. Smile. Walk over.
-                </Text>
-              </View>
-            )}
-          </Card>
+              {selectedOpeningTip}
+            </Text>
+          </View>
 
           {/* Start Timer Button */}
           <View className="w-full">

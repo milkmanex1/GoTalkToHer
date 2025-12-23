@@ -50,20 +50,23 @@ export default function WingmanChatScreen({ navigation }) {
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    if (ready && profile && session) {
-      loadChatHistory();
-    } else if (ready && !session) {
+    if (!ready) return; // app still initializing
+    if (authLoading) return; // auth still loading
+    if (!session) {
+      // user not logged in
       Alert.alert("Error", "You must be logged in to use the chat");
       navigation.goBack();
-    } else if (ready && session && !profile) {
-      Alert.alert(
-        "Error",
-        "Profile not found. Please complete onboarding first."
-      );
-      navigation.replace("Onboarding");
+      return;
     }
-  }, [ready, profile, session]);
+    if (!profile) {
+      // profile still loading, wait
+      console.log("WingmanChat: Profile still loading...");
+      return;
+    }
 
+    // now everything is ready → load chat
+    loadChatHistory();
+  }, [ready, profile, session, authLoading]);
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });

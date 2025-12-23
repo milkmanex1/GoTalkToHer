@@ -22,6 +22,7 @@ export default function ProfileScreen({ navigation }) {
   const [activityData, setActivityData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(10); // Default to Balanced (10s)
   const insets = useSafeAreaInsets();
+  const [signingOut, setSigningOut] = useState(false);
   const isRefreshingRef = useRef(false);
 
   // Freeze profile into stable local state to prevent crashes during hydration
@@ -71,27 +72,23 @@ export default function ProfileScreen({ navigation }) {
     }
   }, [localProfile]);
 
-  useFocusEffect(
-    useCallback(() => {
-      // Delay the refresh slightly to let AuthContext restore the session first
-      const timer = setTimeout(() => {
-        refresh?.();
-        console.log("🔄 ProfileScreen refreshed (delayed)");
-      }, 80); // small delay prevents null-hydration crash
-
-      return () => clearTimeout(timer);
-    }, [refresh])
-  );
-
   const handleSignOut = async () => {
+    if (signingOut) return;
+
+    setSigningOut(true);
+
     try {
       await supabase.auth.signOut();
+
+      // IMPORTANT: reset navigation AFTER signOut fully completes
       navigation.reset({
         index: 0,
         routes: [{ name: "Login" }],
       });
     } catch (error) {
       console.error("Error signing out:", error);
+    } finally {
+      setSigningOut(false);
     }
   };
 
@@ -690,6 +687,7 @@ export default function ProfileScreen({ navigation }) {
           {/* Sign Out Button */}
           <TouchableOpacity
             onPress={handleSignOut}
+            disabled={signingOut}
             className="bg-surface border border-red-500 rounded-xl px-4 py-4 items-center mt-8"
           >
             <Text

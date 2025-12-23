@@ -67,111 +67,29 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let mounted = true;
 
-    const initializeAuth = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    setLoading(true);
 
-        // Get initial session
-        const {
-          data: { session: initialSession },
-          error: sessionError,
-        } = await supabase.auth.getSession();
-
-        // 🔥 DEBUG: Log full session data
-        console.log(
-          "🔥 AUTH SESSION USER ID:",
-          initialSession?.user?.id || "NO SESSION"
-        );
-        console.log(
-          "🔥 FULL SESSION DATA:",
-          JSON.stringify(initialSession, null, 2)
-        );
-
-        if (sessionError) {
-          throw sessionError;
-        }
-
-        if (mounted) {
-          setSession(initialSession);
-
-          // Load profile if session exists
-          if (initialSession?.user?.id) {
-            await loadProfile(initialSession.user.id);
-          } else {
-            setProfile(null);
-          }
-
-          // 🔥 DEBUG: Log stored user profile ID from Storage
-          Storage.getUserId?.()
-            .then((id) => {
-              console.log("🔥 STORED USER PROFILE ID:", id || "NO STORED ID");
-            })
-            .catch((err) => {
-              console.log(
-                "🔥 STORED USER PROFILE ID: Storage.getUserId() not available or error:",
-                err
-              );
-            });
-
-          // ready becomes true only after session + profile are fully loaded
-          // If session exists but no profile, still set ready (user needs onboarding)
-          setReady(true);
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error("Error initializing auth:", err);
-        if (mounted) {
-          setError(err);
-          setSession(null);
-          setProfile(null);
-          setReady(true);
-          setLoading(false);
-        }
-      }
-    };
-
-    initializeAuth();
-
-    // Subscribe to auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      // ⚡ DEBUG: Log auth state change events
       console.log("⚡ AUTH STATE CHANGE EVENT:", event);
       console.log(
         "⚡ UPDATED SESSION USER ID:",
-        newSession?.user?.id || "NO SESSION"
+        session?.user?.id || "NO SESSION"
       );
 
-      setSession(newSession);
+      setSession(session);
 
-      // Reload profile when session changes
-      // Only set profile to null on actual logout (SIGNED_OUT event)
-      if (newSession?.user?.id) {
-        await loadProfile(newSession.user.id);
-
-        // 🔥 DEBUG: Log stored user profile ID after profile reload
-        Storage.getUserId?.()
-          .then((id) => {
-            console.log(
-              "🔥 STORED USER PROFILE ID (after auth change):",
-              id || "NO STORED ID"
-            );
-          })
-          .catch((err) => {
-            console.log(
-              "🔥 STORED USER PROFILE ID (after auth change): Storage.getUserId() not available or error:",
-              err
-            );
-          });
-      } else if (event === "SIGNED_OUT") {
-        // Only clear profile on explicit sign out
+      if (session?.user?.id) {
+        await loadProfile(session.user.id);
+      } else {
         setProfile(null);
       }
-      // Don't clear profile on other events to prevent temporary null states
+
+      setReady(true);
+      setLoading(false);
     });
 
     return () => {
