@@ -3,6 +3,12 @@ import { View, Text } from "react-native";
 import { theme } from "../src/theme/colors";
 
 export default function ChatMessage({ message, isUser = false }) {
+  // Safety check for message content
+  if (!message || typeof message !== 'string') {
+    console.warn("ChatMessage: Invalid message prop:", message);
+    return null;
+  }
+
   return (
     <View className={`mb-4 ${isUser ? "items-end" : "items-start"}`}>
       <View

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -48,6 +48,8 @@ export default function WingmanChatScreen({ navigation }) {
   const [showJumpButton, setShowJumpButton] = useState(false);
   const flatListRef = useRef(null);
   const insets = useSafeAreaInsets();
+  const messageIdCounter = useRef(0);
+  const scrollTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!ready) return; // app still initializing
@@ -67,72 +69,142 @@ export default function WingmanChatScreen({ navigation }) {
     // now everything is ready → load chat
     loadChatHistory();
   }, [ready, profile, session, authLoading]);
+
+  // Safe scroll to end function
+  const scrollToEndSafely = useCallback(() => {
+    try {
+      if (flatListRef.current && messages.length > 0) {
+        // Clear any pending scroll
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+        // Use setTimeout to ensure FlatList is ready
+        scrollTimeoutRef.current = setTimeout(() => {
+          try {
+            flatListRef.current?.scrollToEnd({ animated: true });
+          } catch (scrollError) {
+            console.error("Error scrolling to end:", scrollError);
+          }
+        }, 100);
+      }
+    } catch (error) {
+      console.error("Error in scrollToEndSafely:", error);
+    }
+  }, [messages.length]);
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    flatListRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
+    scrollToEndSafely();
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [messages, scrollToEndSafely]);
 
   const loadChatHistory = async () => {
-    if (!profile?.id) return;
+    if (!profile?.id) {
+      console.error("WingmanChat: Cannot load history - no profile ID");
+      setLoadingHistory(false);
+      return;
+    }
 
     try {
+      console.log("WingmanChat: Loading chat history for user:", profile.id);
       // Load recent chat history using user_id - limit to last 30 messages
-      const { data: history } = await supabase
+      const { data: history, error: fetchError } = await supabase
         .from("chat_messages")
         .select("*")
         .eq("user_id", profile.id)
         .order("timestamp", { ascending: false })
         .limit(30);
 
-      if (history) {
-        // Reverse to show oldest first (ascending order)
-        const formattedMessages = history.reverse().map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        }));
-        setMessages(formattedMessages);
+      if (fetchError) {
+        console.error("WingmanChat: Error fetching history:", fetchError);
+        throw fetchError;
       }
 
-      // Add welcome message if no history
-      if (!history || history.length === 0) {
-        setMessages([
-          {
-            role: "assistant",
-            content:
-              "Hey! I'm your Wingman AI coach. I'm here to help you build confidence and overcome approach anxiety. What's on your mind?",
-          },
-        ]);
+      if (history && history.length > 0) {
+        // Reverse to show oldest first (ascending order) and add unique IDs
+        const formattedMessages = history.reverse().map((msg, idx) => ({
+          id: msg.id || `msg-${Date.now()}-${idx}`,
+          role: msg.role || "assistant",
+          content: msg.content || "",
+        }));
+        console.log("WingmanChat: Loaded", formattedMessages.length, "messages");
+        setMessages(formattedMessages);
+        messageIdCounter.current = formattedMessages.length;
+      } else {
+        // Add welcome message if no history
+        const welcomeMessage = {
+          id: `msg-welcome-${Date.now()}`,
+          role: "assistant",
+          content:
+            "Hey! I'm your Wingman AI coach. I'm here to help you build confidence and overcome approach anxiety. What's on your mind?",
+        };
+        console.log("WingmanChat: No history found, showing welcome message");
+        setMessages([welcomeMessage]);
+        messageIdCounter.current = 1;
       }
     } catch (error) {
-      console.error("Error loading chat:", error);
+      console.error("WingmanChat: Error loading chat:", error);
+      handleError(error, "Failed to load chat history. Please try again.");
+      // Set empty state with welcome message on error
+      setMessages([
+        {
+          id: `msg-welcome-error-${Date.now()}`,
+          role: "assistant",
+          content:
+            "Hey! I'm your Wingman AI coach. I'm here to help you build confidence and overcome approach anxiety. What's on your mind?",
+        },
+      ]);
     } finally {
       setLoadingHistory(false);
     }
   };
 
   const handleSend = async () => {
-    if (!inputText.trim() || loading) return;
+    if (!inputText.trim() || loading) {
+      console.log("WingmanChat: Send blocked - empty text or loading");
+      return;
+    }
     if (!profile || !session) {
+      console.error("WingmanChat: Send blocked - no profile or session");
       Alert.alert("Error", "You must be logged in to send messages");
       return;
     }
 
     const userMessage = inputText.trim();
+    console.log("WingmanChat: Sending message:", userMessage.substring(0, 50));
+    
+    // Clear input immediately to prevent double-sends
     setInputText("");
     setLoading(true);
 
-    // Add user message to UI immediately
-    const newUserMessage = { role: "user", content: userMessage };
-    setMessages((prev) => [...prev, newUserMessage]);
+    // Generate unique ID for user message
+    const userMessageId = `msg-user-${Date.now()}-${++messageIdCounter.current}`;
+    const newUserMessage = { 
+      id: userMessageId,
+      role: "user", 
+      content: userMessage 
+    };
 
-    // Auto-scroll to bottom
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 50);
+    // Add user message to UI immediately
+    setMessages((prev) => {
+      try {
+        return [...prev, newUserMessage];
+      } catch (error) {
+        console.error("WingmanChat: Error updating messages:", error);
+        return prev;
+      }
+    });
+
+    // Scroll to bottom after state update
+    scrollToEndSafely();
 
     try {
       // Save user message to database using user_id
-      await supabase.from("chat_messages").insert([
+      const { error: insertError } = await supabase.from("chat_messages").insert([
         {
           user_id: profile.id,
           role: "user",
@@ -140,23 +212,48 @@ export default function WingmanChatScreen({ navigation }) {
         },
       ]);
 
-      // Generate AI response
-      const chatHistory = [...messages, newUserMessage].map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
+      if (insertError) {
+        console.error("WingmanChat: Error saving user message:", insertError);
+        throw insertError;
+      }
 
+      // Generate AI response
+      const chatHistory = [...messages, newUserMessage]
+        .filter(msg => msg && msg.content) // Filter out any invalid messages
+        .map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        }));
+
+      console.log("WingmanChat: Generating AI response...");
       const aiResponse = await generatePersonalizedCoaching(
         profile,
         userMessage,
         chatHistory
       );
 
-      const assistantMessage = { role: "assistant", content: aiResponse };
-      setMessages((prev) => [...prev, assistantMessage]);
+      if (!aiResponse || typeof aiResponse !== 'string') {
+        throw new Error("Invalid AI response received");
+      }
+
+      const assistantMessageId = `msg-assistant-${Date.now()}-${++messageIdCounter.current}`;
+      const assistantMessage = { 
+        id: assistantMessageId,
+        role: "assistant", 
+        content: aiResponse 
+      };
+      
+      setMessages((prev) => {
+        try {
+          return [...prev, assistantMessage];
+        } catch (error) {
+          console.error("WingmanChat: Error updating messages with AI response:", error);
+          return prev;
+        }
+      });
 
       // Save AI response to database using user_id
-      await supabase.from("chat_messages").insert([
+      const { error: aiInsertError } = await supabase.from("chat_messages").insert([
         {
           user_id: profile.id,
           role: "assistant",
@@ -164,14 +261,25 @@ export default function WingmanChatScreen({ navigation }) {
         },
       ]);
 
-      // Auto-scroll to bottom
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 50);
+      if (aiInsertError) {
+        console.error("WingmanChat: Error saving AI message:", aiInsertError);
+        // Don't throw - message is already in UI
+      }
+
+      // Scroll to bottom after AI response
+      scrollToEndSafely();
     } catch (error) {
+      console.error("WingmanChat: Error in handleSend:", error);
       handleError(error, "Failed to send message. Please try again.");
       // Remove user message on error
-      setMessages((prev) => prev.slice(0, -1));
+      setMessages((prev) => {
+        try {
+          return prev.filter(msg => msg.id !== userMessageId);
+        } catch (filterError) {
+          console.error("WingmanChat: Error removing failed message:", filterError);
+          return prev;
+        }
+      });
     } finally {
       setLoading(false);
     }
@@ -219,32 +327,61 @@ export default function WingmanChatScreen({ navigation }) {
         <FlatList
           ref={flatListRef}
           data={messages}
-          keyExtractor={(item, index) => `message-${index}`}
-          renderItem={({ item }) => (
-            <ChatMessage message={item.content} isUser={item.role === "user"} />
-          )}
+          keyExtractor={(item) => item?.id || `msg-${Date.now()}-${Math.random()}`}
+          renderItem={({ item }) => {
+            try {
+              if (!item || !item.content) {
+                console.warn("WingmanChat: Invalid message item:", item);
+                return null;
+              }
+              return (
+                <ChatMessage 
+                  message={item.content} 
+                  isUser={item.role === "user"} 
+                />
+              );
+            } catch (error) {
+              console.error("WingmanChat: Error rendering message:", error);
+              return null;
+            }
+          }}
           contentContainerStyle={{ flexGrow: 1, padding: 24 }}
           keyboardShouldPersistTaps="handled"
-          onContentSizeChange={() =>
-            flatListRef.current?.scrollToEnd({ animated: true })
-          }
+          removeClippedSubviews={false}
+          onContentSizeChange={() => {
+            try {
+              scrollToEndSafely();
+            } catch (error) {
+              console.error("WingmanChat: Error in onContentSizeChange:", error);
+            }
+          }}
           onScroll={(event) => {
-            const { contentOffset, contentSize, layoutMeasurement } =
-              event.nativeEvent;
+            try {
+              const { contentOffset, contentSize, layoutMeasurement } =
+                event.nativeEvent;
 
-            // User is scrolling up if they are at least 40px above the bottom
-            const isUserScrollingUp =
-              contentOffset.y <
-              contentSize.height - layoutMeasurement.height - 40;
+              // User is scrolling up if they are at least 40px above the bottom
+              const isUserScrollingUp =
+                contentOffset.y <
+                contentSize.height - layoutMeasurement.height - 40;
 
-            setShowJumpButton(isUserScrollingUp);
+              setShowJumpButton(isUserScrollingUp);
+            } catch (error) {
+              console.error("WingmanChat: Error in onScroll:", error);
+            }
           }}
           scrollEventThrottle={50}
         />
         {/* Floating "Jump to Latest" button */}
         {showJumpButton && (
           <TouchableOpacity
-            onPress={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            onPress={() => {
+              try {
+                scrollToEndSafely();
+              } catch (error) {
+                console.error("WingmanChat: Error jumping to latest:", error);
+              }
+            }}
             style={{
               position: "absolute",
               bottom: insets.bottom + 150, // ensures it floats above bottom nav
@@ -275,9 +412,21 @@ export default function WingmanChatScreen({ navigation }) {
               placeholder="Ask for advice or share what's on your mind..."
               placeholderTextColor={theme.textSecondary}
               value={inputText}
-              onChangeText={setInputText}
+              onChangeText={(text) => {
+                try {
+                  setInputText(text);
+                } catch (error) {
+                  console.error("WingmanChat: Error updating input text:", error);
+                }
+              }}
               multiline
               maxLength={500}
+              onFocus={() => {
+                console.log("WingmanChat: TextInput focused");
+              }}
+              onBlur={() => {
+                console.log("WingmanChat: TextInput blurred");
+              }}
             />
             <Button
               title="Send"

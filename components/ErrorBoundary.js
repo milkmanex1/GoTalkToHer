@@ -13,10 +13,33 @@ export class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("Error caught by boundary:", error, errorInfo);
+    // Enhanced logging for debugging crashes
+    const errorDetails = {
+      message: error?.message || error?.toString() || "Unknown error",
+      stack: error?.stack || "No stack trace",
+      componentStack: errorInfo?.componentStack || "No component stack",
+      timestamp: new Date().toISOString(),
+    };
+    
+    console.error("=== ERROR BOUNDARY CAUGHT ERROR ===");
+    console.error("Error:", errorDetails.message);
+    console.error("Stack:", errorDetails.stack);
+    console.error("Component Stack:", errorDetails.componentStack);
+    console.error("Timestamp:", errorDetails.timestamp);
+    console.error("Full Error Object:", error);
+    console.error("Full Error Info:", errorInfo);
+    console.error("===================================");
+    
+    // Try to log to AsyncStorage for persistence (optional)
+    try {
+      // You can add AsyncStorage logging here if needed
+    } catch (storageError) {
+      console.error("Failed to save error to storage:", storageError);
+    }
+    
     this.setState({
-      error: error.toString(),
-      errorInfo: errorInfo.componentStack,
+      error: errorDetails.message,
+      errorInfo: errorDetails.componentStack,
     });
   }
 
