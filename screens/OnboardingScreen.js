@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -37,6 +37,15 @@ export default function OnboardingScreen({ navigation }) {
   const [biggestChallenge, setBiggestChallenge] = useState(CHALLENGES[0]);
   const [loading, setLoading] = useState(false);
   const insets = useSafeAreaInsets();
+  const isMountedRef = useRef(true);
+
+  // Track component mount state
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Auth guard: Ensure user is authenticated before showing onboarding
   useEffect(() => {
@@ -45,29 +54,63 @@ export default function OnboardingScreen({ navigation }) {
     }
   }, [session, navigation]);
 
+  // Ensure ageRange is always a valid value from AGE_RANGES
+  useEffect(() => {
+    if (!AGE_RANGES.includes(ageRange)) {
+      setAgeRange(AGE_RANGES[0]);
+    }
+  }, []);
+
+  // Ensure biggestChallenge is always a valid value from CHALLENGES
+  useEffect(() => {
+    if (!CHALLENGES.includes(biggestChallenge)) {
+      setBiggestChallenge(CHALLENGES[0]);
+    }
+  }, []);
+
   const handleSubmit = async () => {
+    console.log("Onboarding: handleSubmit called");
+    
     if (!name.trim()) {
       Alert.alert("Error", "Please enter your name");
       return;
     }
 
-    // Get authenticated user ID from session
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.user?.id) {
-      Alert.alert("Error", "No authenticated user found");
-      navigation.replace("Login");
+    // Prevent multiple submissions
+    if (loading) {
+      console.log("Onboarding: Already loading, ignoring submit");
       return;
     }
 
-    const userId = session.user.id;
+    if (!isMountedRef.current) {
+      console.log("Onboarding: Component unmounted, aborting submit");
+      return;
+    }
 
     setLoading(true);
+    console.log("Onboarding: Starting profile update");
+    
     try {
+      // Get authenticated user ID from session
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
+
+      if (!currentSession?.user?.id) {
+        console.error("Onboarding: No authenticated user found");
+        if (isMountedRef.current) {
+          setLoading(false);
+          Alert.alert("Error", "No authenticated user found");
+          navigation.replace("Login");
+        }
+        return;
+      }
+
+      const userId = currentSession.user.id;
+      console.log("Onboarding: Updating profile for user:", userId);
+
       // Update the existing profile using the authenticated user's ID
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("user_profile")
         .update({
           name: name.trim(),
@@ -77,19 +120,77 @@ export default function OnboardingScreen({ navigation }) {
           fear_type: biggestChallenge,
           preferred_environments: [],
         })
-        .eq("id", userId);
+        .eq("id", userId)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Onboarding: Profile update error:", error);
+        throw error;
+      }
+
+      if (!data) {
+        console.error("Onboarding: Profile update returned no data");
+        throw new Error("Profile update returned no data");
+      }
+
+      console.log("Onboarding: Profile updated successfully");
 
       // Refresh profile so AuthContext updates immediately
-      await refresh();
+      // Wrap in try-catch to prevent navigation issues if refresh fails
+      try {
+        console.log("Onboarding: Refreshing profile in AuthContext");
+        await refresh();
+        console.log("Onboarding: Profile refresh completed");
+      } catch (refreshError) {
+        console.error("Onboarding: Refresh error (non-fatal):", refreshError);
+        // Continue with navigation even if refresh fails
+        // The profile was updated successfully in the database
+      }
 
-      // Navigate to Home
-      navigation.replace("Home");
-    } catch (error) {
-      handleError(error, "Failed to save profile. Please try again.");
-    } finally {
+      // Check if component is still mounted before updating state/navigating
+      if (!isMountedRef.current) {
+        console.log("Onboarding: Component unmounted during update, aborting navigation");
+        return;
+      }
+
+      // Reset loading before navigation to prevent state update issues
       setLoading(false);
+
+      // Small delay to ensure all state updates are complete before navigation
+      // This prevents crashes from navigation during React state updates
+      setTimeout(() => {
+        if (!isMountedRef.current) {
+          console.log("Onboarding: Component unmounted before navigation");
+          return;
+        }
+        
+        try {
+          console.log("Onboarding: Navigating to Home");
+          if (navigation && navigation.replace) {
+            navigation.replace("Home");
+            console.log("Onboarding: Navigation successful");
+          } else {
+            console.error("Onboarding: Navigation not available");
+          }
+        } catch (navError) {
+          console.error("Onboarding: Navigation error:", navError);
+          // Fallback: try navigate instead of replace
+          try {
+            if (navigation && navigation.navigate) {
+              navigation.navigate("Home");
+            }
+          } catch (fallbackError) {
+            console.error("Onboarding: Fallback navigation also failed:", fallbackError);
+          }
+        }
+      }, 50);
+    } catch (error) {
+      console.error("Onboarding: Submit error:", error);
+      if (isMountedRef.current) {
+        setLoading(false);
+        handleError(error, "Failed to save profile. Please try again.");
+      }
     }
   };
 

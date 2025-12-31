@@ -1,4 +1,4 @@
-package com.gotalktoher
+package com.gotalktoher.app
 
 import android.os.Build
 import android.os.Bundle

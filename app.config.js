@@ -13,7 +13,7 @@ export default {
     assetBundlePatterns: ["**/*"],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.gotalktoher.app",
+    bundleIdentifier: "com.gotalktoher.app"
     },
     android: {
       package: "com.gotalktoher.app",
@@ -31,6 +31,9 @@ export default {
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+      eas: {
+        projectId: "04714027-b2a6-45fc-afdb-664557e1e9e9",
+      },
     },
   },
 };
