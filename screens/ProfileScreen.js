@@ -17,6 +17,8 @@ import { getActivityHeatmap } from "../lib/progress";
 import { theme } from "../src/theme/colors";
 
 export default function ProfileScreen({ navigation }) {
+  console.log("ProfileScreen: Component rendering");
+  
   const { profile, session, loading: authLoading, ready, refresh } = useAuth();
   const [localProfile, setLocalProfile] = useState(null);
   const [activityData, setActivityData] = useState([]);
@@ -25,10 +27,17 @@ export default function ProfileScreen({ navigation }) {
   const [signingOut, setSigningOut] = useState(false);
   const isRefreshingRef = useRef(false);
 
+  console.log("ProfileScreen: Auth state - ready:", ready, "loading:", authLoading, "session:", !!session, "profile:", !!profile);
+
   // Freeze profile into stable local state to prevent crashes during hydration
   useEffect(() => {
+    console.log("ProfileScreen: Profile changed:", profile ? "exists" : "null");
     if (profile) {
+      console.log("ProfileScreen: Setting local profile with ID:", profile.id);
       setLocalProfile(profile);
+    } else {
+      console.log("ProfileScreen: Profile is null, clearing local profile");
+      setLocalProfile(null);
     }
   }, [profile]);
 
@@ -59,15 +68,19 @@ export default function ProfileScreen({ navigation }) {
 
   const loadActivityData = useCallback(async () => {
     if (!localProfile?.id) {
+      console.log("ProfileScreen: No profile ID, setting empty activity data");
       setActivityData([]);
       return;
     }
 
     try {
+      console.log("ProfileScreen: Loading activity data for profile:", localProfile.id);
       const heatmapData = await getActivityHeatmap(localProfile.id);
+      console.log("ProfileScreen: Activity data loaded:", heatmapData);
       setActivityData(heatmapData || []);
     } catch (error) {
-      console.error("Error loading activity data:", error);
+      console.error("ProfileScreen: Error loading activity data:", error);
+      console.error("ProfileScreen: Error stack:", error?.stack);
       setActivityData([]);
     }
   }, [localProfile]);
@@ -95,6 +108,7 @@ export default function ProfileScreen({ navigation }) {
   // Show loading spinner until profile is actually available
   // NEVER show "Profile not found" or "Please log in" - this causes logout loops
   if (!ready || authLoading || !session || !localProfile) {
+    console.log("ProfileScreen: Showing loading state - ready:", ready, "authLoading:", authLoading, "session:", !!session, "localProfile:", !!localProfile);
     return (
       <SafeAreaView
         style={{ flex: 1, backgroundColor: theme.background }}
@@ -107,6 +121,8 @@ export default function ProfileScreen({ navigation }) {
       </SafeAreaView>
     );
   }
+
+  console.log("ProfileScreen: Rendering profile content for:", localProfile?.id);
 
   return (
     <SafeAreaView
@@ -387,14 +403,38 @@ export default function ProfileScreen({ navigation }) {
                     minHeight: 120,
                   }}
                 >
-                  {activityData && activityData.length > 0
-                    ? activityData.map((day, index) => {
-                        const maxCount = Math.max(
-                          ...activityData.map((d) => d.count || 0),
-                          1
-                        );
-                        const height =
-                          maxCount > 0 ? ((day.count || 0) / maxCount) * 80 : 0;
+                  {(() => {
+                    try {
+                      if (!activityData || !Array.isArray(activityData) || activityData.length === 0) {
+                        return null;
+                      }
+
+                      // Calculate maxCount once outside the map for efficiency
+                      const maxCount = Math.max(
+                        ...activityData.map((d) => (d && typeof d.count === 'number' ? d.count : 0)),
+                        1
+                      );
+
+                      return activityData.map((day, index) => {
+                        if (!day) {
+                          console.warn(`ProfileScreen: Day at index ${index} is null/undefined`);
+                          return null;
+                        }
+
+                        const dayCount = day && typeof day.count === 'number' ? day.count : 0;
+                        const height = maxCount > 0 ? (dayCount / maxCount) * 80 : 0;
+                        
+                        // Safely get backgroundColor
+                        let backgroundColor;
+                        try {
+                          backgroundColor = dayCount > 0
+                            ? theme.primary
+                            : (theme.textSecondaryRgba ? theme.textSecondaryRgba(0.2) : theme.textSecondary);
+                        } catch (colorError) {
+                          console.error("ProfileScreen: Error getting backgroundColor:", colorError);
+                          backgroundColor = theme.textSecondary;
+                        }
+
                         return (
                           <View
                             key={index}
@@ -408,10 +448,7 @@ export default function ProfileScreen({ navigation }) {
                               style={{
                                 width: "100%",
                                 height: Math.max(height, 4),
-                                backgroundColor:
-                                  (day.count || 0) > 0
-                                    ? theme.primary
-                                    : theme.textSecondaryRgba(0.2),
+                                backgroundColor: backgroundColor,
                                 borderRadius: 4,
                                 marginBottom: 8,
                               }}
@@ -423,7 +460,7 @@ export default function ProfileScreen({ navigation }) {
                                 marginBottom: 4,
                               }}
                             >
-                              {day.count || 0}
+                              {dayCount}
                             </Text>
                             <Text
                               style={{
@@ -435,8 +472,17 @@ export default function ProfileScreen({ navigation }) {
                             </Text>
                           </View>
                         );
-                      })
-                    : null}
+                      });
+                    } catch (error) {
+                      console.error("ProfileScreen: Error rendering activity heatmap:", error);
+                      console.error("ProfileScreen: Error stack:", error?.stack);
+                      return (
+                        <Text style={{ color: theme.error, fontSize: 12 }}>
+                          Error loading activity data
+                        </Text>
+                      );
+                    }
+                  })()}
                 </View>
               </View>
             </View>

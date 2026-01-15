@@ -1,5 +1,6 @@
 {
   "expo": {
+    "jsEngine": "jsc",
     "name": "Go Talk To Her",
     "slug": "go-talk-to-her",
     "version": "1.0.0",
@@ -19,7 +20,8 @@
       "package": "com.gotalktoher.app",
       "permissions": ["NOTIFICATIONS"],
       "softwareKeyboardLayoutMode": "resize",
-      "windowSoftInputMode": "adjustResize"
+      "windowSoftInputMode": "adjustResize",
+      "versionCode": 7
     },
     "plugins": [
       [

@@ -17,7 +17,11 @@ export default function App() {
   useEffect(() => {
     // Set Android navigation bar color to theme background
     if (Platform.OS === "android") {
-      NavigationBar.setBackgroundColorAsync(theme.background);
+      // Force pure black system navigation bar (match Expo Go)
+      NavigationBar.setBackgroundColorAsync("#000000").catch(() => {});
+
+      // Ensure icons are light (white)
+      NavigationBar.setButtonStyleAsync("light").catch(() => {});
     }
 
     // Register for push notifications (fail silently if not available)

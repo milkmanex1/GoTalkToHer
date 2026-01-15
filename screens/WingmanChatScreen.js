@@ -63,7 +63,7 @@ export default function WingmanChatScreen({ navigation }) {
   useEffect(() => {
     isMountedRef.current = true;
     console.log("WingmanChat: Component mounted");
-    
+
     // Add global error handler to catch unhandled errors
     const errorHandler = (error, isFatal) => {
       console.error("WingmanChat: GLOBAL ERROR HANDLER:", error);
@@ -74,25 +74,32 @@ export default function WingmanChatScreen({ navigation }) {
     };
 
     // Listen for auth state changes to handle session refreshes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (!isMountedRef.current) return;
-      
-      console.log("WingmanChat: Auth state changed:", event, "User ID:", newSession?.user?.id || "NO SESSION");
-      
+
+      console.log(
+        "WingmanChat: Auth state changed:",
+        event,
+        "User ID:",
+        newSession?.user?.id || "NO SESSION"
+      );
+
       // If session expires during an operation, abort it
-      if (event === 'SIGNED_OUT' && abortControllerRef.current) {
+      if (event === "SIGNED_OUT" && abortControllerRef.current) {
         console.log("WingmanChat: Session expired, aborting current operation");
         abortControllerRef.current.abort();
       }
-      
+
       // If session refreshes (token refresh), log it but don't abort
-      if (event === 'TOKEN_REFRESHED') {
+      if (event === "TOKEN_REFRESHED") {
         console.log("WingmanChat: Token refreshed");
       }
     });
-    
+
     authStateSubscriptionRef.current = subscription;
-    
+
     return () => {
       console.log("WingmanChat: Component unmounting");
       isMountedRef.current = false;
@@ -123,7 +130,7 @@ export default function WingmanChatScreen({ navigation }) {
     if (!ready) return; // app still initializing
     if (authLoading) return; // auth still loading
     if (!isMountedRef.current) return; // component unmounted
-    
+
     if (!session) {
       // user not logged in
       console.log("WingmanChat: No session, navigating back");
@@ -146,7 +153,9 @@ export default function WingmanChatScreen({ navigation }) {
     try {
       // Check if component is still mounted
       if (!isMountedRef.current) {
-        console.log("WingmanChat: scrollToEndSafely called but component unmounted");
+        console.log(
+          "WingmanChat: scrollToEndSafely called but component unmounted"
+        );
         return;
       }
 
@@ -155,7 +164,7 @@ export default function WingmanChatScreen({ navigation }) {
         shouldScrollRef.current = true; // Mark that we should scroll after typing stops
         return;
       }
-      
+
       if (flatListRef.current && messages.length > 0 && isMountedRef.current) {
         // Clear any pending scroll
         if (scrollTimeoutRef.current) {
@@ -167,15 +176,24 @@ export default function WingmanChatScreen({ navigation }) {
           try {
             // Double-check mount status before scrolling
             if (!isMountedRef.current) {
-              console.log("WingmanChat: Component unmounted during scroll operation");
+              console.log(
+                "WingmanChat: Component unmounted during scroll operation"
+              );
               return;
             }
-            if (flatListRef.current && !isTypingRef.current && isMountedRef.current) {
+            if (
+              flatListRef.current &&
+              !isTypingRef.current &&
+              isMountedRef.current
+            ) {
               flatListRef.current.scrollToEnd({ animated: true });
             }
           } catch (scrollError) {
             console.error("WingmanChat: Error scrolling to end:", scrollError);
-            console.error("WingmanChat: Scroll error stack:", scrollError.stack);
+            console.error(
+              "WingmanChat: Scroll error stack:",
+              scrollError.stack
+            );
           }
         });
       }
@@ -216,7 +234,10 @@ export default function WingmanChatScreen({ navigation }) {
     }
 
     try {
-      console.log("WingmanChat: Loading chat history for user:", currentProfileId);
+      console.log(
+        "WingmanChat: Loading chat history for user:",
+        currentProfileId
+      );
       // Check if still mounted before making request
       if (!isMountedRef.current) {
         console.log("WingmanChat: Component unmounted during history fetch");
@@ -249,7 +270,11 @@ export default function WingmanChatScreen({ navigation }) {
           role: msg.role || "assistant",
           content: msg.content || "",
         }));
-        console.log("WingmanChat: Loaded", formattedMessages.length, "messages");
+        console.log(
+          "WingmanChat: Loaded",
+          formattedMessages.length,
+          "messages"
+        );
         if (isMountedRef.current) {
           setMessages(formattedMessages);
           messageIdCounter.current = formattedMessages.length;
@@ -317,7 +342,7 @@ export default function WingmanChatScreen({ navigation }) {
 
     const userMessage = inputText.trim();
     console.log("WingmanChat: Sending message:", userMessage.substring(0, 50));
-    
+
     // Clear input immediately to prevent double-sends
     if (isMountedRef.current) {
       setInputText("");
@@ -326,10 +351,10 @@ export default function WingmanChatScreen({ navigation }) {
 
     // Generate unique ID for user message
     const userMessageId = `msg-user-${Date.now()}-${++messageIdCounter.current}`;
-    const newUserMessage = { 
+    const newUserMessage = {
       id: userMessageId,
-      role: "user", 
-      content: userMessage 
+      role: "user",
+      content: userMessage,
     };
 
     // Add user message to UI immediately
@@ -350,7 +375,9 @@ export default function WingmanChatScreen({ navigation }) {
     try {
       // Check if component is still mounted
       if (!isMountedRef.current || signal.aborted) {
-        console.log("WingmanChat: Operation cancelled - component unmounted or aborted");
+        console.log(
+          "WingmanChat: Operation cancelled - component unmounted or aborted"
+        );
         return;
       }
 
@@ -360,13 +387,15 @@ export default function WingmanChatScreen({ navigation }) {
       }
 
       // Save user message to database using user_id
-      const { error: insertError } = await supabase.from("chat_messages").insert([
-        {
-          user_id: currentProfileId,
-          role: "user",
-          content: userMessage,
-        },
-      ]);
+      const { error: insertError } = await supabase
+        .from("chat_messages")
+        .insert([
+          {
+            user_id: currentProfileId,
+            role: "user",
+            content: userMessage,
+          },
+        ]);
 
       // Check again after async operation
       if (!isMountedRef.current || signal.aborted) {
@@ -381,14 +410,14 @@ export default function WingmanChatScreen({ navigation }) {
 
       // Generate AI response
       const chatHistory = [...messages, newUserMessage]
-        .filter(msg => msg && msg.content) // Filter out any invalid messages
+        .filter((msg) => msg && msg.content) // Filter out any invalid messages
         .map((msg) => ({
           role: msg.role,
           content: msg.content,
         }));
 
       console.log("WingmanChat: Generating AI response...");
-      
+
       // Check auth state before AI call
       if (!isMountedRef.current || signal.aborted) {
         console.log("WingmanChat: Operation cancelled before AI call");
@@ -413,23 +442,26 @@ export default function WingmanChatScreen({ navigation }) {
         throw new Error("Session expired. Please try again.");
       }
 
-      if (!aiResponse || typeof aiResponse !== 'string') {
+      if (!aiResponse || typeof aiResponse !== "string") {
         throw new Error("Invalid AI response received");
       }
 
       const assistantMessageId = `msg-assistant-${Date.now()}-${++messageIdCounter.current}`;
-      const assistantMessage = { 
+      const assistantMessage = {
         id: assistantMessageId,
-        role: "assistant", 
-        content: aiResponse 
+        role: "assistant",
+        content: aiResponse,
       };
-      
+
       if (isMountedRef.current) {
         setMessages((prev) => {
           try {
             return [...prev, assistantMessage];
           } catch (error) {
-            console.error("WingmanChat: Error updating messages with AI response:", error);
+            console.error(
+              "WingmanChat: Error updating messages with AI response:",
+              error
+            );
             return prev;
           }
         });
@@ -437,13 +469,15 @@ export default function WingmanChatScreen({ navigation }) {
 
       // Save AI response to database using user_id
       if (isMountedRef.current && !signal.aborted) {
-        const { error: aiInsertError } = await supabase.from("chat_messages").insert([
-          {
-            user_id: currentProfileId,
-            role: "assistant",
-            content: aiResponse,
-          },
-        ]);
+        const { error: aiInsertError } = await supabase
+          .from("chat_messages")
+          .insert([
+            {
+              user_id: currentProfileId,
+              role: "assistant",
+              content: aiResponse,
+            },
+          ]);
 
         if (aiInsertError) {
           console.error("WingmanChat: Error saving AI message:", aiInsertError);
@@ -463,24 +497,14 @@ export default function WingmanChatScreen({ navigation }) {
       }
 
       console.error("WingmanChat: Error in handleSend:", error);
-      
-      // Check if it's an auth error
-      if (error.message?.includes("Session expired") || error.message?.includes("JWT")) {
-        Alert.alert("Session Expired", "Your session has expired. Please try again.");
-      } else {
-        handleError(error, "Failed to send message. Please try again.");
-      }
-      
-      // Remove user message on error (only if still mounted)
+
+      Alert.alert(
+        "Wingman Chat Error (DEBUG)",
+        error?.message || error?.toString() || JSON.stringify(error)
+      );
+
       if (isMountedRef.current) {
-        setMessages((prev) => {
-          try {
-            return prev.filter(msg => msg.id !== userMessageId);
-          } catch (filterError) {
-            console.error("WingmanChat: Error removing failed message:", filterError);
-            return prev;
-          }
-        });
+        setMessages((prev) => prev.filter((msg) => msg.id !== userMessageId));
       }
     } finally {
       if (isMountedRef.current) {
@@ -507,7 +531,12 @@ export default function WingmanChatScreen({ navigation }) {
   }
 
   if (!profile || !session) {
-    console.log("WingmanChat: Rendering login required screen - profile:", !!profile, "session:", !!session);
+    console.log(
+      "WingmanChat: Rendering login required screen - profile:",
+      !!profile,
+      "session:",
+      !!session
+    );
     return (
       <SafeAreaView
         style={{ flex: 1, backgroundColor: theme.background }}
@@ -523,269 +552,320 @@ export default function WingmanChatScreen({ navigation }) {
   // Wrap render in try-catch to prevent crashes
   try {
     return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: theme.background }}
-      edges={[]}
-    >
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        edges={[]}
       >
-        <FlatList
-          ref={flatListRef}
-          data={Array.isArray(messages) ? messages : []}
-          keyExtractor={(item) => {
-            // Ensure we always return a valid string key
-            if (item?.id && typeof item.id === 'string') {
-              return item.id;
-            }
-            return `msg-${Date.now()}-${Math.random()}`;
-          }}
-          renderItem={({ item, index }) => {
-            try {
-              if (!item || !item.content) {
-                console.warn("WingmanChat: Invalid message item:", item);
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        >
+          <FlatList
+            ref={flatListRef}
+            data={Array.isArray(messages) ? messages : []}
+            keyExtractor={(item) => {
+              // Ensure we always return a valid string key
+              if (item?.id && typeof item.id === "string") {
+                return item.id;
+              }
+              return `msg-${Date.now()}-${Math.random()}`;
+            }}
+            renderItem={({ item, index }) => {
+              try {
+                if (!item || !item.content) {
+                  console.warn("WingmanChat: Invalid message item:", item);
+                  return null;
+                }
+                // Memoize the message content to prevent unnecessary re-renders
+                return (
+                  <ChatMessage
+                    key={item.id || `msg-${index}`}
+                    message={String(item.content)}
+                    isUser={item.role === "user"}
+                  />
+                );
+              } catch (error) {
+                console.error(
+                  "WingmanChat: Error rendering message:",
+                  error,
+                  item
+                );
                 return null;
               }
-              // Memoize the message content to prevent unnecessary re-renders
-              return (
-                <ChatMessage 
-                  key={item.id || `msg-${index}`}
-                  message={String(item.content)} 
-                  isUser={item.role === "user"} 
-                />
-              );
-            } catch (error) {
-              console.error("WingmanChat: Error rendering message:", error, item);
-              return null;
-            }
-          }}
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 12, paddingVertical: 16 }}
-          keyboardShouldPersistTaps="handled"
-          removeClippedSubviews={false}
-          initialNumToRender={10}
-          maxToRenderPerBatch={5}
-          windowSize={10}
-          onContentSizeChange={() => {
-            try {
-              // Check mount status first
-              if (!isMountedRef.current) {
-                return;
-              }
-              // Only auto-scroll if user is not actively typing
-              if (!isTypingRef.current && isMountedRef.current) {
-                scrollToEndSafely();
-              }
-            } catch (error) {
-              console.error("WingmanChat: Error in onContentSizeChange:", error);
-              console.error("WingmanChat: onContentSizeChange error stack:", error.stack);
-            }
-          }}
-          onScroll={(event) => {
-            try {
-              if (!isMountedRef.current) {
-                return;
-              }
-
-              const { contentOffset, contentSize, layoutMeasurement } =
-                event.nativeEvent;
-
-              // User is scrolling up if they are at least 40px above the bottom
-              const isUserScrollingUp =
-                contentOffset.y <
-                contentSize.height - layoutMeasurement.height - 40;
-
-              if (isMountedRef.current) {
-                setShowJumpButton(isUserScrollingUp);
-              }
-            } catch (error) {
-              console.error("WingmanChat: Error in onScroll:", error);
-              console.error("WingmanChat: onScroll error stack:", error.stack);
-            }
-          }}
-          scrollEventThrottle={50}
-        />
-        {/* Floating "Jump to Latest" button */}
-        {showJumpButton && (
-          <TouchableOpacity
-            onPress={() => {
+            }}
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingHorizontal: 12,
+              paddingVertical: 16,
+            }}
+            keyboardShouldPersistTaps="handled"
+            removeClippedSubviews={false}
+            initialNumToRender={10}
+            maxToRenderPerBatch={5}
+            windowSize={10}
+            onContentSizeChange={() => {
               try {
-                scrollToEndSafely();
+                // Check mount status first
+                if (!isMountedRef.current) {
+                  return;
+                }
+                // Only auto-scroll if user is not actively typing
+                if (!isTypingRef.current && isMountedRef.current) {
+                  scrollToEndSafely();
+                }
               } catch (error) {
-                console.error("WingmanChat: Error jumping to latest:", error);
+                console.error(
+                  "WingmanChat: Error in onContentSizeChange:",
+                  error
+                );
+                console.error(
+                  "WingmanChat: onContentSizeChange error stack:",
+                  error.stack
+                );
               }
             }}
-            style={{
-              position: "absolute",
-              bottom: insets.bottom + 150, // ensures it floats above bottom nav
-              right: 4,
-              backgroundColor: "#3d3d3d",
-              width: 24,
-              height: 24,
-              borderRadius: 24,
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 999,
-              elevation: 6,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              padding: 12,
+            onScroll={(event) => {
+              try {
+                if (!isMountedRef.current) {
+                  return;
+                }
+
+                const { contentOffset, contentSize, layoutMeasurement } =
+                  event.nativeEvent;
+
+                // User is scrolling up if they are at least 40px above the bottom
+                const isUserScrollingUp =
+                  contentOffset.y <
+                  contentSize.height - layoutMeasurement.height - 40;
+
+                if (isMountedRef.current) {
+                  setShowJumpButton(isUserScrollingUp);
+                }
+              } catch (error) {
+                console.error("WingmanChat: Error in onScroll:", error);
+                console.error(
+                  "WingmanChat: onScroll error stack:",
+                  error.stack
+                );
+              }
             }}
-          >
-            <ArrowDownIcon color="#FFFFFF" size={24} />
-          </TouchableOpacity>
-        )}
-        <View className="border-t border-border bg-surface px-4 py-2">
-          <View className="flex-row items-center">
-            <TextInput
-              className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 mr-2"
-              style={{ fontSize: 16, color: theme.text }}
-              placeholder="Ask for advice or share what's on your mind..."
-              placeholderTextColor={theme.textSecondary}
-              value={inputText}
-              onChangeText={(text) => {
+            scrollEventThrottle={50}
+          />
+          {/* Floating "Jump to Latest" button */}
+          {showJumpButton && (
+            <TouchableOpacity
+              onPress={() => {
                 try {
-                  // Check if component is still mounted
-                  if (!isMountedRef.current) {
-                    console.log("WingmanChat: onChangeText called but component unmounted");
-                    return;
-                  }
-
-                  // Clear any existing typing timeout
-                  if (typingTimeoutRef.current) {
-                    clearTimeout(typingTimeoutRef.current);
-                    typingTimeoutRef.current = null;
-                  }
-
-                  // Mark that user is typing
-                  isTypingRef.current = true;
-                  
-                  // Update input text safely with additional validation
-                  if (isMountedRef.current) {
-                    try {
-                      // Validate text is a string and within limits
-                      const safeText = typeof text === 'string' ? text.substring(0, 500) : '';
-                      setInputText(safeText);
-                    } catch (setStateError) {
-                      console.error("WingmanChat: Error in setInputText:", setStateError);
-                      console.error("WingmanChat: setInputText error stack:", setStateError.stack);
-                      throw setStateError; // Re-throw to be caught by outer catch
+                  scrollToEndSafely();
+                } catch (error) {
+                  console.error("WingmanChat: Error jumping to latest:", error);
+                }
+              }}
+              style={{
+                position: "absolute",
+                bottom: insets.bottom + 150, // ensures it floats above bottom nav
+                right: 4,
+                backgroundColor: "#3d3d3d",
+                width: 24,
+                height: 24,
+                borderRadius: 24,
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 999,
+                elevation: 6,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                padding: 12,
+              }}
+            >
+              <ArrowDownIcon color="#FFFFFF" size={24} />
+            </TouchableOpacity>
+          )}
+          <View className="border-t border-border bg-surface px-4 py-2">
+            <View className="flex-row items-center">
+              <TextInput
+                className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 mr-2"
+                style={{ fontSize: 16, color: theme.text }}
+                placeholder="Ask for advice or share what's on your mind..."
+                placeholderTextColor={theme.textSecondary}
+                value={inputText}
+                onChangeText={(text) => {
+                  try {
+                    // Check if component is still mounted
+                    if (!isMountedRef.current) {
+                      console.log(
+                        "WingmanChat: onChangeText called but component unmounted"
+                      );
+                      return;
                     }
-                  }
-                  
-                  // Clear typing flag after a short delay
-                  typingTimeoutRef.current = setTimeout(() => {
-                    try {
-                      // Check mount status before accessing refs
-                      if (!isMountedRef.current) {
-                        console.log("WingmanChat: Typing timeout fired but component unmounted");
-                        return;
-                      }
 
-                      isTypingRef.current = false;
-                      
-                      // Scroll if we were supposed to scroll during typing
-                      if (shouldScrollRef.current && isMountedRef.current) {
-                        shouldScrollRef.current = false;
-                        scrollToEndSafely();
-                      }
-                    } catch (timeoutError) {
-                      console.error("WingmanChat: Error in typing timeout:", timeoutError);
-                      console.error("WingmanChat: Timeout error stack:", timeoutError.stack);
-                    } finally {
+                    // Clear any existing typing timeout
+                    if (typingTimeoutRef.current) {
+                      clearTimeout(typingTimeoutRef.current);
                       typingTimeoutRef.current = null;
                     }
-                  }, 500);
-                } catch (error) {
-                  console.error("WingmanChat: CRITICAL ERROR in onChangeText:", error);
-                  console.error("WingmanChat: onChangeText error stack:", error.stack);
-                  console.error("WingmanChat: Error details:", {
-                    textLength: text?.length,
-                    isMounted: isMountedRef.current,
-                    hasFlatListRef: !!flatListRef.current,
-                  });
-                  isTypingRef.current = false;
-                  if (typingTimeoutRef.current) {
-                    clearTimeout(typingTimeoutRef.current);
-                    typingTimeoutRef.current = null;
-                  }
-                }
-              }}
-              multiline
-              maxLength={500}
-              onFocus={() => {
-                console.log("WingmanChat: TextInput focused");
-                isTypingRef.current = true;
-              }}
-              onBlur={() => {
-                try {
-                  console.log("WingmanChat: TextInput blurred");
-                  
-                  // Clear typing timeout if it exists
-                  if (typingTimeoutRef.current) {
-                    clearTimeout(typingTimeoutRef.current);
-                    typingTimeoutRef.current = null;
-                  }
 
-                  isTypingRef.current = false;
-                  
-                  // Scroll if needed after blur
-                  if (shouldScrollRef.current && isMountedRef.current) {
-                    shouldScrollRef.current = false;
-                    // Clear any existing blur timeout
-                    if (blurTimeoutRef.current) {
-                      clearTimeout(blurTimeoutRef.current);
-                    }
-                    blurTimeoutRef.current = setTimeout(() => {
+                    // Mark that user is typing
+                    isTypingRef.current = true;
+
+                    // Update input text safely with additional validation
+                    if (isMountedRef.current) {
                       try {
-                        if (isMountedRef.current) {
+                        // Validate text is a string and within limits
+                        const safeText =
+                          typeof text === "string"
+                            ? text.substring(0, 500)
+                            : "";
+                        setInputText(safeText);
+                      } catch (setStateError) {
+                        console.error(
+                          "WingmanChat: Error in setInputText:",
+                          setStateError
+                        );
+                        console.error(
+                          "WingmanChat: setInputText error stack:",
+                          setStateError.stack
+                        );
+                        throw setStateError; // Re-throw to be caught by outer catch
+                      }
+                    }
+
+                    // Clear typing flag after a short delay
+                    typingTimeoutRef.current = setTimeout(() => {
+                      try {
+                        // Check mount status before accessing refs
+                        if (!isMountedRef.current) {
+                          console.log(
+                            "WingmanChat: Typing timeout fired but component unmounted"
+                          );
+                          return;
+                        }
+
+                        isTypingRef.current = false;
+
+                        // Scroll if we were supposed to scroll during typing
+                        if (shouldScrollRef.current && isMountedRef.current) {
+                          shouldScrollRef.current = false;
                           scrollToEndSafely();
                         }
-                      } catch (blurError) {
-                        console.error("WingmanChat: Error in blur timeout:", blurError);
+                      } catch (timeoutError) {
+                        console.error(
+                          "WingmanChat: Error in typing timeout:",
+                          timeoutError
+                        );
+                        console.error(
+                          "WingmanChat: Timeout error stack:",
+                          timeoutError.stack
+                        );
                       } finally {
-                        blurTimeoutRef.current = null;
+                        typingTimeoutRef.current = null;
                       }
-                    }, 100);
+                    }, 500);
+                  } catch (error) {
+                    console.error(
+                      "WingmanChat: CRITICAL ERROR in onChangeText:",
+                      error
+                    );
+                    console.error(
+                      "WingmanChat: onChangeText error stack:",
+                      error.stack
+                    );
+                    console.error("WingmanChat: Error details:", {
+                      textLength: text?.length,
+                      isMounted: isMountedRef.current,
+                      hasFlatListRef: !!flatListRef.current,
+                    });
+                    isTypingRef.current = false;
+                    if (typingTimeoutRef.current) {
+                      clearTimeout(typingTimeoutRef.current);
+                      typingTimeoutRef.current = null;
+                    }
                   }
-                } catch (error) {
-                  console.error("WingmanChat: Error in onBlur:", error);
-                  console.error("WingmanChat: onBlur error stack:", error.stack);
-                }
-              }}
-              onSelectionChange={() => {
-                try {
-                  // Keep typing flag active during selection changes
-                  if (isMountedRef.current) {
-                    isTypingRef.current = true;
+                }}
+                multiline
+                maxLength={500}
+                onFocus={() => {
+                  console.log("WingmanChat: TextInput focused");
+                  isTypingRef.current = true;
+                }}
+                onBlur={() => {
+                  try {
+                    console.log("WingmanChat: TextInput blurred");
+
+                    // Clear typing timeout if it exists
+                    if (typingTimeoutRef.current) {
+                      clearTimeout(typingTimeoutRef.current);
+                      typingTimeoutRef.current = null;
+                    }
+
+                    isTypingRef.current = false;
+
+                    // Scroll if needed after blur
+                    if (shouldScrollRef.current && isMountedRef.current) {
+                      shouldScrollRef.current = false;
+                      // Clear any existing blur timeout
+                      if (blurTimeoutRef.current) {
+                        clearTimeout(blurTimeoutRef.current);
+                      }
+                      blurTimeoutRef.current = setTimeout(() => {
+                        try {
+                          if (isMountedRef.current) {
+                            scrollToEndSafely();
+                          }
+                        } catch (blurError) {
+                          console.error(
+                            "WingmanChat: Error in blur timeout:",
+                            blurError
+                          );
+                        } finally {
+                          blurTimeoutRef.current = null;
+                        }
+                      }, 100);
+                    }
+                  } catch (error) {
+                    console.error("WingmanChat: Error in onBlur:", error);
+                    console.error(
+                      "WingmanChat: onBlur error stack:",
+                      error.stack
+                    );
                   }
-                } catch (error) {
-                  console.error("WingmanChat: Error in onSelectionChange:", error);
-                }
-              }}
-            />
-            <Button
-              title="Send"
-              onPress={handleSend}
-              disabled={!inputText.trim() || loading}
-              loading={loading}
-              className="px-4"
-            />
+                }}
+                onSelectionChange={() => {
+                  try {
+                    // Keep typing flag active during selection changes
+                    if (isMountedRef.current) {
+                      isTypingRef.current = true;
+                    }
+                  } catch (error) {
+                    console.error(
+                      "WingmanChat: Error in onSelectionChange:",
+                      error
+                    );
+                  }
+                }}
+              />
+              <Button
+                title="Send"
+                onPress={handleSend}
+                disabled={!inputText.trim() || loading}
+                loading={loading}
+                className="px-4"
+              />
+            </View>
           </View>
-        </View>
-        {/* Bottom navigation bar */}
-        <BottomNavBar navigation={navigation} currentRoute="WingmanChat" />
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          {/* Bottom navigation bar */}
+          <BottomNavBar navigation={navigation} currentRoute="WingmanChat" />
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     );
   } catch (error) {
     console.error("WingmanChat: CRITICAL ERROR in render:", error);
     console.error("WingmanChat: Error stack:", error.stack);
     console.error("WingmanChat: Profile:", !!profile, "Session:", !!session);
-    
+
     // Return error UI instead of crashing
     return (
       <SafeAreaView
@@ -793,10 +873,24 @@ export default function WingmanChatScreen({ navigation }) {
         edges={[]}
       >
         <View className="flex-1 items-center justify-center bg-background p-6">
-          <Text style={{ color: theme.text, fontSize: 18, marginBottom: 16, textAlign: 'center' }}>
+          <Text
+            style={{
+              color: theme.text,
+              fontSize: 18,
+              marginBottom: 16,
+              textAlign: "center",
+            }}
+          >
             Something went wrong
           </Text>
-          <Text style={{ color: theme.textSecondary, fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
+          <Text
+            style={{
+              color: theme.textSecondary,
+              fontSize: 14,
+              textAlign: "center",
+              marginBottom: 24,
+            }}
+          >
             {error?.message || "An unexpected error occurred"}
           </Text>
           <TouchableOpacity
@@ -806,7 +900,7 @@ export default function WingmanChatScreen({ navigation }) {
             }}
             className="bg-primary px-6 py-3 rounded-xl"
           >
-            <Text style={{ color: '#fff', fontWeight: '600' }}>Go Back</Text>
+            <Text style={{ color: "#fff", fontWeight: "600" }}>Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
